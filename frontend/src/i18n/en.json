@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "categories": "Categories",
+    "inventory": "Inventory",
+    "transactions": "Stock Transactions",
+    "sales": "Sales",
+    "purchases": "Purchases",
+    "suppliers": "Suppliers",
+    "notifications": "Stock Alerts",
+    "insights": "AI Insights",
+    "assistant": "AI Assistant",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "common": {
+    "search": "Search...",
+    "add": "Add New",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View Details",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "filter": "Filter",
+    "status": "Status",
+    "actions": "Actions",
+    "loading": "Loading data...",
+    "noData": "No records found",
+    "back": "Go Back",
+    "all": "All",
+    "inStock": "In Stock",
+    "lowStock": "Low Stock",
+    "outOfStock": "Out of Stock",
+    "critical": "Critical"
+  },
+  "dashboard": {
+    "title": "Shop Overview",
+    "subtitle": "Here is what is happening at your store today.",
+    "totalProducts": "Total Products",
+    "stockValue": "Total Stock Value",
+    "todaysSales": "Today's Sales",
+    "lowStock": "Low Stock Items",
+    "outOfStock": "Out of Stock Items",
+    "salesOverview": "Sales Overview",
+    "topProducts": "Top Selling Products",
+    "lowStockAlerts": "Low Stock Alerts",
+    "recentTransactions": "Recent Transactions",
+    "quickActions": "Quick Actions",
+    "recordSale": "Record Sale",
+    "recordPurchase": "Record Purchase",
+    "addProduct": "Add Product",
+    "viewAlerts": "View Alerts"
+  },
+  "assistant": {
+    "title": "SmartStock AI Assistant",
+    "subtitle": "Ask anything about your store inventory, sales, and restocking needs.",
+    "placeholder": "Ask a question (e.g., Which products should I reorder?)...",
+    "suggested": "Suggested questions",
+    "clearChat": "Clear Conversation",
+    "thinking": "AI is analyzing your store data..."
+  }
+}
+

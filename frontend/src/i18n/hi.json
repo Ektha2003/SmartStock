@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "products": "सामान (Products)",
+    "categories": "श्रेणियां (Categories)",
+    "inventory": "स्टॉक (Inventory)",
+    "transactions": "स्टॉक लेन-देन",
+    "sales": "बिक्री (Sales)",
+    "purchases": "खरीद (Purchases)",
+    "suppliers": "आपूर्तिकर्ता (Suppliers)",
+    "notifications": "स्टॉक अलर्ट",
+    "insights": "स्मार्ट अनुमान (AI Insights)",
+    "assistant": "एआई सहायक (AI Assistant)",
+    "settings": "सेटिंग्स",
+    "logout": "लॉग आउट"
+  },
+  "common": {
+    "search": "खोजें...",
+    "add": "नया जोड़ें",
+    "edit": "संपादित करें",
+    "delete": "हटाएं",
+    "view": "विवरण देखें",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "confirm": "पुष्टि करें",
+    "filter": "फ़िल्टर",
+    "status": "स्थिति",
+    "actions": "कार्य",
+    "loading": "लोड हो रहा है...",
+    "noData": "कोई रिकॉर्ड नहीं मिला",
+    "back": "वापस जाएं",
+    "all": "सभी",
+    "inStock": "स्टॉक में है",
+    "lowStock": "कम स्टॉक",
+    "outOfStock": "स्टॉक खत्म",
+    "critical": "अति आवश्यक"
+  },
+  "dashboard": {
+    "title": "दुकान का अवलोकन",
+    "subtitle": "आज आपकी दुकान में क्या चल रहा है, इसका सारांश।",
+    "totalProducts": "कुल सामान",
+    "stockValue": "कुल स्टॉक मूल्य",
+    "todaysSales": "आज की बिक्री",
+    "lowStock": "कम स्टॉक सामान",
+    "outOfStock": "स्टॉक खत्म सामान",
+    "salesOverview": "बिक्री अवलोकन",
+    "topProducts": "सबसे ज्यादा बिकने वाला सामान",
+    "lowStockAlerts": "कम स्टॉक चेतावनी",
+    "recentTransactions": "हाल के लेन-देन",
+    "quickActions": "त्वरित कार्य",
+    "recordSale": "बिक्री दर्ज करें",
+    "recordPurchase": "खरीद दर्ज करें",
+    "addProduct": "नया सामान जोड़ें",
+    "viewAlerts": "अलर्ट देखें"
+  },
+  "assistant": {
+    "title": "स्मार्टस्टॉक एआई सहायक",
+    "subtitle": "अपनी दुकान के स्टॉक, बिक्री और रीऑर्डर के बारे में कुछ भी पूछें।",
+    "placeholder": "प्रश्न पूछें (जैसे: मुझे कौन सा सामान दोबारा मंगाना चाहिए?)...",
+    "suggested": "सुझाए गए प्रश्न",
+    "clearChat": "बातचीत साफ़ करें",
+    "thinking": "एआई आपकी दुकान के डेटा का विश्लेषण कर रहा है..."
+  }
+}
+
