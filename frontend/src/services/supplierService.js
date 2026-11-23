@@ -9,13 +9,13 @@ export const supplierService = {
         const data = extractData(response);
         if (data?.items && Array.isArray(data.items)) {
           return {
-            items: data.items,
+            items: data.items.map(normalizeSupplier),
             totalCount: data.totalCount ?? data.items.length,
           };
         }
         if (Array.isArray(data)) {
           return {
-            items: data,
+            items: data.map(normalizeSupplier),
             totalCount: data.length,
           };
         }
@@ -139,10 +139,18 @@ export const supplierService = {
 
 function normalizeSupplier(s) {
   if (!s) return s;
+  const name = s.supplierName || s.name || 'Wholesale Supplier';
   return {
     ...s,
-    name: s.supplierName || s.name,
-    supplierName: s.supplierName || s.name,
+    id: s.id,
+    name,
+    supplierName: name,
+    contactPerson: s.contactPerson || '',
+    phone: s.phone || '',
+    email: s.email || '',
+    address: s.address || '',
+    gstin: s.gstin || '',
+    status: s.isActive === false ? 'Inactive' : 'Active',
   };
 }
 

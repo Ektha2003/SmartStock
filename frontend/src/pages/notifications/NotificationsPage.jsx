@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -23,10 +23,16 @@ export function NotificationsPage() {
 
   const [unreadOnly, setUnreadOnly] = useState(false);
 
-  const { data: notifications = [], isLoading } = useQuery({
+  const { data: notificationsData, isLoading } = useQuery({
     queryKey: ['notifications', unreadOnly],
     queryFn: () => notificationService.getNotifications({ unreadOnly }),
   });
+
+  const notifications = useMemo(() => {
+    if (Array.isArray(notificationsData)) return notificationsData;
+    if (notificationsData?.items && Array.isArray(notificationsData.items)) return notificationsData.items;
+    return [];
+  }, [notificationsData]);
 
   const markReadMutation = useMutation({
     mutationFn: (id) => notificationService.markAsRead(id),

@@ -18,17 +18,29 @@ export function SalesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
-  const { data: sales = [], isLoading } = useQuery({
+  const { data: salesData, isLoading } = useQuery({
     queryKey: ['sales'],
     queryFn: () => salesService.getSales(),
   });
 
+  const sales = useMemo(() => {
+    if (Array.isArray(salesData)) return salesData;
+    if (salesData?.items && Array.isArray(salesData.items)) return salesData.items;
+    return [];
+  }, [salesData]);
+
   const filteredSales = useMemo(() => {
-    return sales.filter((s) => {
+    return (sales || []).filter((s) => {
+      const invoiceNo = (s.invoiceNumber || '').toLowerCase();
+      const custName = (s.customerName || '').toLowerCase();
+      const custPhone = s.customerPhone || '';
+      const searchLower = search.toLowerCase();
+
       const matchSearch =
-        s.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
-        (s.customerName && s.customerName.toLowerCase().includes(search.toLowerCase())) ||
-        (s.customerPhone && s.customerPhone.includes(search));
+        !search ||
+        invoiceNo.includes(searchLower) ||
+        custName.includes(searchLower) ||
+        custPhone.includes(search);
       const matchPayment = !paymentFilter || s.paymentMethod === paymentFilter;
       return matchSearch && matchPayment;
     });
@@ -41,7 +53,7 @@ export function SalesPage() {
   }, [filteredSales, currentPage, pageSize]);
 
   const totalRevenue = useMemo(() => {
-    return sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    return (sales || []).reduce((sum, s) => sum + (Number(s.totalAmount) || 0), 0);
   }, [sales]);
 
   const columns = [
@@ -86,13 +98,12 @@ export function SalesPage() {
       align: 'center',
       render: (r) => (
         <span
-          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
-            r.paymentMethod === 'UPI'
+          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${r.paymentMethod === 'UPI'
               ? 'bg-purple-50 text-purple-700 border border-purple-200'
               : r.paymentMethod === 'Cash'
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-              : 'bg-blue-50 text-blue-700 border border-blue-200'
-          }`}
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-blue-50 text-blue-700 border border-blue-200'
+            }`}
         >
           {r.paymentMethod || 'Cash'}
         </span>

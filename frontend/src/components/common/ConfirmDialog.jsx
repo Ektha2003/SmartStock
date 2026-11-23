@@ -15,8 +15,13 @@ export function ConfirmDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop with negative inset to push Chromium blur edge bleeding off-screen */}
+      <div
+        onClick={onClose}
+        className="fixed -inset-10 bg-slate-900/50 backdrop-blur-sm"
+      />
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 relative z-10 animate-in fade-in duration-150">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"

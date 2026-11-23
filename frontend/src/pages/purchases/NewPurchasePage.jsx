@@ -62,16 +62,18 @@ export function NewPurchasePage() {
       if (ocrData.invoiceNumber) setInvoiceNumber(ocrData.invoiceNumber);
       if (ocrData.notes) setNotes(ocrData.notes);
       if (ocrData.supplierName && suppliers.length > 0) {
+        const ocrSupName = ocrData.supplierName.toLowerCase();
         const foundSup = suppliers.find((s) =>
-          (s.supplierName || s.name || '').toLowerCase().includes(ocrData.supplierName.toLowerCase())
+          (s.supplierName || s.name || '').toLowerCase().includes(ocrSupName)
         );
         if (foundSup) setSupplierId(String(foundSup.id));
       }
 
       if (ocrData.items && Array.isArray(ocrData.items)) {
         const ocrItems = ocrData.items.map((oi) => {
+          const oiName = (oi.productName || '').toLowerCase();
           const matched = products.find((p) =>
-            p.name.toLowerCase().includes(oi.productName.toLowerCase())
+            (p.name || '').toLowerCase().includes(oiName)
           );
           return {
             productId: matched ? matched.id : (products[0]?.id || 'prod-1'),
@@ -434,8 +436,9 @@ export function NewPurchasePage() {
           if (extracted.notes) setNotes(extracted.notes);
           if (extracted.items && Array.isArray(extracted.items)) {
             const mapped = extracted.items.map((oi) => {
+              const oiName = (oi.productName || '').toLowerCase();
               const matched = products.find((p) =>
-                p.name.toLowerCase().includes(oi.productName.toLowerCase())
+                (p.name || '').toLowerCase().includes(oiName)
               );
               return {
                 productId: matched ? matched.id : (products[0]?.id || 'prod-1'),

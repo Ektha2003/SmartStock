@@ -24,10 +24,16 @@ export function SuppliersPage() {
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
-  const { data: suppliers = [], isLoading } = useQuery({
+  const { data: suppliersData, isLoading } = useQuery({
     queryKey: ['suppliers'],
     queryFn: () => supplierService.getSuppliers(),
   });
+
+  const suppliers = useMemo(() => {
+    if (Array.isArray(suppliersData)) return suppliersData;
+    if (suppliersData?.items && Array.isArray(suppliersData.items)) return suppliersData.items;
+    return [];
+  }, [suppliersData]);
 
   const {
     register,
@@ -119,12 +125,13 @@ export function SuppliersPage() {
   };
 
   const filtered = useMemo(() => {
+    const q = (search || '').toLowerCase().trim();
+    if (!q) return suppliers;
     return suppliers.filter((s) => {
-      return (
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        s.contactPerson.toLowerCase().includes(search.toLowerCase()) ||
-        s.phone.includes(search)
-      );
+      const name = (s.name || s.supplierName || '').toLowerCase();
+      const contact = (s.contactPerson || '').toLowerCase();
+      const phone = String(s.phone || '');
+      return name.includes(q) || contact.includes(q) || phone.includes(q);
     });
   }, [suppliers, search]);
 
@@ -260,8 +267,12 @@ export function SuppliersPage() {
 
       {/* Add / Edit modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={handleCloseModal}
+            className="fixed -inset-10 bg-slate-900/50 backdrop-blur-sm"
+          />
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 relative z-10 animate-in fade-in">
             <button
               onClick={handleCloseModal}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"

@@ -47,9 +47,11 @@ export function InventoryPage() {
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
+      const q = (search || '').toLowerCase();
       const matchSearch =
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.sku.toLowerCase().includes(search.toLowerCase());
+        !search ||
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.sku || '').toLowerCase().includes(q);
       const minStock = p.minimumStock ?? p.minStock ?? 5;
       let matchStatus = true;
       if (stockFilter === 'in') matchStatus = p.currentStock > minStock;

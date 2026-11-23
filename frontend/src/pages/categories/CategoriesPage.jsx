@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit2, Trash2, FolderTree, Package, X, Loader2 } from 'lucide-react';
 import categoryService from '../../services/categoryService';
@@ -16,10 +16,16 @@ export function CategoriesPage() {
   const [categoryDesc, setCategoryDesc] = useState('');
   const [deleteId, setDeleteId] = useState(null);
 
-  const { data: categories = [], isLoading } = useQuery({
+  const { data: categoriesData, isLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoryService.getCategories(),
   });
+
+  const categories = useMemo(() => {
+    if (Array.isArray(categoriesData)) return categoriesData;
+    if (categoriesData?.items && Array.isArray(categoriesData.items)) return categoriesData.items;
+    return [];
+  }, [categoriesData]);
 
   const createMutation = useMutation({
     mutationFn: (data) => categoryService.createCategory(data),
@@ -170,8 +176,13 @@ export function CategoriesPage() {
 
       {/* Add / Edit modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with negative inset to push Chromium blur edge bleeding off-screen */}
+          <div
+            onClick={handleCloseModal}
+            className="fixed -inset-10 bg-slate-900/50 backdrop-blur-sm"
+          />
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 relative z-10 animate-in fade-in">
             <button
               onClick={handleCloseModal}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"

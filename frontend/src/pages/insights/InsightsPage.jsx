@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -29,10 +29,16 @@ export function InsightsPage() {
     queryFn: () => forecastService.getForecast(),
   });
 
-  const { data: recommendations = [] } = useQuery({
+  const { data: recommendationsData = [] } = useQuery({
     queryKey: ['recommendations', 'purchases'],
     queryFn: () => forecastService.getPurchaseRecommendations(),
   });
+
+  const recommendations = useMemo(() => {
+    if (Array.isArray(recommendationsData)) return recommendationsData;
+    if (recommendationsData?.items && Array.isArray(recommendationsData.items)) return recommendationsData.items;
+    return [];
+  }, [recommendationsData]);
 
   const summary = forecastData?.summary || {
     productsAtRisk: 0,
@@ -231,8 +237,12 @@ export function InsightsPage() {
 
       {/* Forecast Detail Modal */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setSelectedProduct(null)}
+            className="fixed -inset-10 bg-slate-900/50 backdrop-blur-sm"
+          />
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 relative z-10 animate-in fade-in">
             <h3 className="text-base font-bold text-slate-900 mb-1">{selectedProduct.productName}</h3>
             <p className="text-xs text-slate-500 mb-4">Detailed AI Demand & Runway Breakdown</p>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -34,11 +34,17 @@ export function AppSidebar({ isOpen, onClose }) {
     queryFn: () => businessService.getBusiness(),
   });
 
-  const { data: notifications = [] } = useQuery({
+  const { data: notificationsData } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationService.getNotifications(),
     refetchInterval: 30000,
   });
+
+  const notifications = useMemo(() => {
+    if (Array.isArray(notificationsData)) return notificationsData;
+    if (notificationsData?.items && Array.isArray(notificationsData.items)) return notificationsData.items;
+    return [];
+  }, [notificationsData]);
 
   const unreadAlerts = notifications.filter((n) => !n.isRead).length;
   const storeName = business?.businessName || user?.businessName || 'Sharma Kirana Store';

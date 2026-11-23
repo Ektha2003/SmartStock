@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Bell, Languages, BotMessageSquare, Sparkles } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
@@ -16,17 +16,23 @@ export function AppHeader({ onMenuClick }) {
     queryFn: () => businessService.getBusiness(),
   });
 
-  const { data: notifications = [] } = useQuery({
+  const { data: notificationsData } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationService.getNotifications(),
     refetchInterval: 30000,
   });
 
+  const notifications = useMemo(() => {
+    if (Array.isArray(notificationsData)) return notificationsData;
+    if (notificationsData?.items && Array.isArray(notificationsData.items)) return notificationsData.items;
+    return [];
+  }, [notificationsData]);
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
   const storeName = business?.businessName || user?.businessName || 'Sharma Kirana Store';
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between shadow-xs">
+    <header className="sticky top-0 z-30 h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between shadow-xs">
       {/* Left section: mobile hamburger & shop name */}
       <div className="flex items-center gap-3">
         <button
