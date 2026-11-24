@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createPortal } from 'react-dom';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   FileSpreadsheet,
@@ -24,7 +25,6 @@ import supplierService from '../../services/supplierService';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchInput from '../../components/common/SearchInput';
-import Pagination from '../../components/common/Pagination';
 import StatusBadge from '../../components/common/StatusBadge';
 import AIInvoiceAssistantDrawer from '../../components/invoices/AIInvoiceAssistantDrawer';
 import { formatCurrency, formatDate } from '../../utils/formatters';
@@ -65,6 +65,7 @@ export function SupplierInvoicesPage() {
         pageSize,
         search: search || undefined,
       }),
+    placeholderData: keepPreviousData,
   });
 
   // Fetch Suppliers for dropdowns
@@ -290,8 +291,8 @@ export function SupplierInvoicesPage() {
           <div className="w-full md:w-80">
             <SearchInput
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
+              onChange={(val) => {
+                setSearch(val);
                 setCurrentPage(1);
               }}
               placeholder="Search invoice number, supplier..."
@@ -353,19 +354,13 @@ export function SupplierInvoicesPage() {
         columns={columns}
         data={invoices}
         isLoading={isLoading}
-        emptyMessage="No supplier invoices found matching current filters. Click 'Upload Invoice' to process a vendor bill."
+        emptyTitle="No supplier invoices found"
+        emptyDescription="Nothing matches the current filters. Click 'Upload Invoice' to process a vendor bill."
+        pagination={{ currentPage, totalPages, onPageChange: setCurrentPage, totalCount, pageSize }}
       />
 
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      )}
-
       {/* Upload Invoice Modal */}
-      {isUploadModalOpen && (
+      {isUploadModalOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -461,7 +456,8 @@ export function SupplierInvoicesPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* AI Assistant Drawer */}

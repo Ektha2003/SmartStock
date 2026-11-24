@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Plus, Eye, Edit2, Trash2 } from 'lucide-react';
 import productService from '../../services/productService';
 import categoryService from '../../services/categoryService';
@@ -11,7 +11,6 @@ import FilterDropdown from '../../components/common/FilterDropdown';
 import StatusBadge from '../../components/common/StatusBadge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import ProductFormModal from '../../components/products/ProductFormModal';
-import Pagination from '../../components/common/Pagination';
 import { formatCurrency } from '../../utils/formatters';
 import { toast } from 'sonner';
 
@@ -39,6 +38,7 @@ export function ProductsPage() {
         categoryId: selectedCategory || undefined,
         lowStockOnly: selectedStockStatus === 'low' ? true : undefined,
       }),
+    placeholderData: keepPreviousData,
   });
 
   const { data: categories = [] } = useQuery({
@@ -245,12 +245,7 @@ export function ProductsPage() {
         onRowClick={(row) => navigate(`/products/${row.id}`)}
         emptyTitle="No products match your search"
         emptyDescription="Try clearing your category or stock filter to see all items."
-      />
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        pagination={{ currentPage, totalPages, onPageChange: setCurrentPage, totalCount, pageSize }}
       />
 
       {/* Edit modal */}

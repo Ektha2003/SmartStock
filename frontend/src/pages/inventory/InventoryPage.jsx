@@ -18,7 +18,6 @@ import DataTable from '../../components/common/DataTable';
 import SearchInput from '../../components/common/SearchInput';
 import FilterDropdown from '../../components/common/FilterDropdown';
 import StatusBadge from '../../components/common/StatusBadge';
-import Pagination from '../../components/common/Pagination';
 import StockAdjustmentModal from '../../components/inventory/StockAdjustmentModal';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
 
@@ -39,7 +38,8 @@ export function InventoryPage() {
   });
 
   const { data: productsData, isLoading: isProductsLoading } = useQuery({
-    queryKey: ['products'],
+    // Own cache key: the dashboard caches a smaller product list under ['products'].
+    queryKey: ['products', 'inventory', { pageSize: 100 }],
     queryFn: () => productService.getProducts({ pageSize: 100 }),
   });
 
@@ -260,12 +260,13 @@ export function InventoryPage() {
         data={paginatedData}
         isLoading={isProductsLoading}
         onRowClick={(row) => navigate(`/products/${row.id}`)}
-      />
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        pagination={{
+          currentPage,
+          totalPages,
+          onPageChange: setCurrentPage,
+          totalCount: filteredProducts.length,
+          pageSize,
+        }}
       />
 
       {/* Stock adjustment modal */}

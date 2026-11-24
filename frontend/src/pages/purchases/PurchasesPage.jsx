@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Plus, Eye, Truck, FileText, Sparkles } from 'lucide-react';
 import purchaseService from '../../services/purchaseService';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchInput from '../../components/common/SearchInput';
-import Pagination from '../../components/common/Pagination';
 import ScanBillModal from '../../components/purchases/ScanBillModal';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
@@ -20,7 +19,13 @@ export function PurchasesPage() {
 
   const { data: purchasesData, isLoading } = useQuery({
     queryKey: ['purchases', currentPage, search],
-    queryFn: () => purchaseService.getPurchases({ pageNumber: currentPage, pageSize }),
+    queryFn: () =>
+      purchaseService.getPurchases({
+        pageNumber: currentPage,
+        pageSize,
+        search: search.trim() || undefined,
+      }),
+    placeholderData: keepPreviousData,
   });
 
   const purchases = purchasesData?.items || (Array.isArray(purchasesData) ? purchasesData : []);
@@ -157,12 +162,7 @@ export function PurchasesPage() {
         onRowClick={(row) => navigate(`/purchases/${row.id}`)}
         emptyTitle="No purchases recorded yet"
         emptyDescription="Record your first stock delivery bill or scan a vendor paper invoice."
-      />
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        pagination={{ currentPage, totalPages, onPageChange: setCurrentPage, totalCount, pageSize }}
       />
 
       {/* AI Invoice OCR Scanner Modal */}

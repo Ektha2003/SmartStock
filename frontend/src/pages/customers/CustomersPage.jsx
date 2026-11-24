@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createPortal } from 'react-dom';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
@@ -23,7 +24,6 @@ import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchInput from '../../components/common/SearchInput';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import Pagination from '../../components/common/Pagination';
 import StatusBadge from '../../components/common/StatusBadge';
 import { toast } from 'sonner';
 
@@ -64,6 +64,7 @@ export default function CustomersPage() {
         pageNumber: currentPage,
         pageSize,
       }),
+    placeholderData: keepPreviousData,
   });
 
   const customers = useMemo(() => {
@@ -182,8 +183,8 @@ export default function CustomersPage() {
   const columns = [
     {
       header: 'Customer',
-      accessor: 'name',
-      render: (_, row) => (
+      key: 'name',
+      render: (row) => (
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold flex items-center justify-center">
             {row.name.substring(0, 2).toUpperCase()}
@@ -212,18 +213,18 @@ export default function CustomersPage() {
     },
     {
       header: 'Delivery Address',
-      accessor: 'deliveryAddress',
-      render: (addr) => (
+      key: 'deliveryAddress',
+      render: (row) => (
         <div className="flex items-start gap-1.5 max-w-xs text-xs text-slate-600 dark:text-slate-300">
           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-          <span className="truncate">{addr || 'Not specified'}</span>
+          <span className="truncate">{row.deliveryAddress || 'Not specified'}</span>
         </div>
       ),
     },
     {
       header: 'Subscription',
-      accessor: 'recurringOrderEnabled',
-      render: (_, row) => (
+      key: 'recurringOrderEnabled',
+      render: (row) => (
         <div>
           {row.recurringOrderEnabled ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
@@ -246,24 +247,24 @@ export default function CustomersPage() {
     },
     {
       header: 'Products',
-      accessor: 'recurringProductsCount',
-      render: (cnt) => (
+      key: 'recurringProductsCount',
+      render: (row) => (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-          {cnt || 0} items
+          {row.recurringProductsCount || 0} items
         </span>
       ),
     },
     {
       header: 'Status',
-      accessor: 'isActive',
-      render: (active) => (
-        <StatusBadge status={active ? 'Active' : 'Inactive'} />
+      key: 'isActive',
+      render: (row) => (
+        <StatusBadge status={row.isActive ? 'Active' : 'Inactive'} />
       ),
     },
     {
       header: 'Actions',
-      accessor: 'id',
-      render: (_, row) => (
+      key: 'actions',
+      render: (row) => (
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => navigate(`/customers/${row.id}`)}
@@ -322,8 +323,8 @@ export default function CustomersPage() {
         <div className="w-full md:w-80">
           <SearchInput
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+            onChange={(val) => {
+              setSearch(val);
               setCurrentPage(1);
             }}
             placeholder="Search by name, email, phone..."
@@ -364,27 +365,17 @@ export default function CustomersPage() {
       </div>
 
       {/* Customer Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-        <DataTable
-          columns={columns}
-          data={customers}
-          isLoading={isLoading}
-          emptyMessage="No customers found matching your criteria."
-        />
-
-        {totalCount > pageSize && (
-          <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
-      </div>
+      <DataTable
+        columns={columns}
+        data={customers}
+        isLoading={isLoading}
+        emptyTitle="No customers found"
+        emptyDescription="No customers match your current search or filters."
+        pagination={{ currentPage, totalPages, onPageChange: setCurrentPage, totalCount, pageSize }}
+      />
 
       {/* Add / Edit Customer Modal */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700 mb-5">
@@ -556,7 +547,8 @@ export default function CustomersPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete confirmation dialog */}

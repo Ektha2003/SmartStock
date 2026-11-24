@@ -7,7 +7,6 @@ import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchInput from '../../components/common/SearchInput';
 import FilterDropdown from '../../components/common/FilterDropdown';
-import Pagination from '../../components/common/Pagination';
 import { formatCurrency, formatDateTime } from '../../utils/formatters';
 
 export function SalesPage() {
@@ -202,12 +201,13 @@ export function SalesPage() {
         onRowClick={(row) => navigate(`/sales/${row.id || row.invoiceNumber}`)}
         emptyTitle="No sales found"
         emptyDescription="Click 'New Sale (POS)' to record your store's first customer sale."
-      />
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        pagination={{
+          currentPage,
+          totalPages,
+          onPageChange: setCurrentPage,
+          totalCount: filteredSales.length,
+          pageSize,
+        }}
       />
     </div>
   );

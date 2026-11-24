@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
@@ -470,7 +471,7 @@ export default function OrderApprovalPublicPage() {
         )}
 
         {/* Skip Confirmation Dialog */}
-        {showSkipConfirm && (
+        {showSkipConfirm && createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4 text-center">
               <Clock className="w-10 h-10 text-amber-500 mx-auto" />
@@ -497,7 +498,8 @@ export default function OrderApprovalPublicPage() {
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* Security badge */}

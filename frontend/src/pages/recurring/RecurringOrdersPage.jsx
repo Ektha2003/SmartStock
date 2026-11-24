@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createPortal } from 'react-dom';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
   Repeat,
@@ -27,7 +28,6 @@ import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchInput from '../../components/common/SearchInput';
 import StatusBadge from '../../components/common/StatusBadge';
-import Pagination from '../../components/common/Pagination';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { toast } from 'sonner';
 
@@ -73,6 +73,7 @@ export default function RecurringOrdersPage() {
         pageNumber: currentPage,
         pageSize,
       }),
+    placeholderData: keepPreviousData,
   });
 
   const orders = useMemo(() => {
@@ -162,14 +163,14 @@ export default function RecurringOrdersPage() {
   const columns = [
     {
       header: 'Order #',
-      accessor: 'orderNumber',
-      render: (num, row) => (
+      key: 'orderNumber',
+      render: (row) => (
         <div>
           <button
             onClick={() => setViewingOrder(row)}
             className="font-bold text-blue-600 hover:underline"
           >
-            {num}
+            {row.orderNumber}
           </button>
           <div className="text-[11px] text-slate-500">
             Source: <span className="font-semibold text-slate-700 dark:text-slate-300">{row.orderSourceName}</span>
@@ -179,8 +180,8 @@ export default function RecurringOrdersPage() {
     },
     {
       header: 'Customer',
-      accessor: 'customerName',
-      render: (_, row) => (
+      key: 'customerName',
+      render: (row) => (
         <div>
           <button
             onClick={() => navigate(`/customers/${row.customerId}`)}
@@ -194,8 +195,8 @@ export default function RecurringOrdersPage() {
     },
     {
       header: 'Delivery Schedule',
-      accessor: 'expectedDeliveryDate',
-      render: (_, row) => (
+      key: 'expectedDeliveryDate',
+      render: (row) => (
         <div className="text-xs">
           <div className="font-semibold text-slate-800 dark:text-slate-200">
             {new Date(row.expectedDeliveryDate).toLocaleDateString()}
@@ -206,26 +207,26 @@ export default function RecurringOrdersPage() {
     },
     {
       header: 'Items',
-      accessor: 'items',
-      render: (items) => (
+      key: 'items',
+      render: (row) => (
         <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-          {items?.length || 0} items
+          {row.items?.length || 0} items
         </div>
       ),
     },
     {
       header: 'Amount',
-      accessor: 'totalAmount',
-      render: (amt) => (
+      key: 'totalAmount',
+      render: (row) => (
         <span className="font-bold text-slate-900 dark:text-slate-100">
-          ₹{amt.toFixed(2)}
+          ₹{Number(row.totalAmount || 0).toFixed(2)}
         </span>
       ),
     },
     {
       header: 'Status & AI Checks',
-      accessor: 'status',
-      render: (_, row) => (
+      key: 'status',
+      render: (row) => (
         <div className="space-y-1">
           <StatusBadge status={row.statusName} />
           {row.requiresManualReview && (
@@ -241,8 +242,8 @@ export default function RecurringOrdersPage() {
     },
     {
       header: 'Actions',
-      accessor: 'id',
-      render: (_, row) => (
+      key: 'actions',
+      render: (row) => (
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setViewingOrder(row)}
@@ -375,8 +376,8 @@ export default function RecurringOrdersPage() {
         <div className="w-full md:w-80">
           <SearchInput
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+            onChange={(val) => {
+              setSearch(val);
               setCurrentPage(1);
             }}
             placeholder="Search order #, customer..."
@@ -439,27 +440,17 @@ export default function RecurringOrdersPage() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-        <DataTable
-          columns={columns}
-          data={orders}
-          isLoading={isLoading}
-          emptyMessage="No recurring orders found matching your filters."
-        />
-
-        {totalCount > pageSize && (
-          <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
-      </div>
+      <DataTable
+        columns={columns}
+        data={orders}
+        isLoading={isLoading}
+        emptyTitle="No recurring orders found"
+        emptyDescription="No recurring orders match your current filters."
+        pagination={{ currentPage, totalPages, onPageChange: setCurrentPage, totalCount, pageSize }}
+      />
 
       {/* ORDER DETAILS MODAL */}
-      {viewingOrder && (
+      {viewingOrder && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
@@ -607,11 +598,12 @@ export default function RecurringOrdersPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* RESOLVE MANUAL REVIEW MODAL */}
-      {reviewOrder && (
+      {reviewOrder && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 dark:border-slate-700 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
@@ -673,11 +665,12 @@ export default function RecurringOrdersPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* AI NATURAL LANGUAGE SIMULATOR MODAL */}
-      {isSimulatorOpen && (
+      {isSimulatorOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
@@ -801,7 +794,8 @@ export default function RecurringOrdersPage() {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

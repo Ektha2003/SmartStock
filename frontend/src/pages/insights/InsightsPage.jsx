@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -236,7 +237,7 @@ export function InsightsPage() {
       </div>
 
       {/* Forecast Detail Modal */}
-      {selectedProduct && (
+      {selectedProduct && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             onClick={() => setSelectedProduct(null)}
@@ -304,7 +305,8 @@ export function InsightsPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

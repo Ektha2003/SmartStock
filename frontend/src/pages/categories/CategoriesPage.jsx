@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit2, Trash2, FolderTree, Package, X, Loader2 } from 'lucide-react';
 import categoryService from '../../services/categoryService';
@@ -175,7 +176,7 @@ export function CategoriesPage() {
       />
 
       {/* Add / Edit modal */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop with negative inset to push Chromium blur edge bleeding off-screen */}
           <div
@@ -244,7 +245,8 @@ export function CategoriesPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete confirmation dialog */}

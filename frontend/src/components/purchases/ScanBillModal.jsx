@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Upload, FileText, Sparkles, Loader2, X, CheckCircle2 } from 'lucide-react';
 import aiService from '../../services/aiService';
 import { toast } from 'sonner';
@@ -41,7 +42,7 @@ export function ScanBillModal({ isOpen, onClose, onExtracted }) {
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         onClick={onClose}
@@ -132,7 +133,8 @@ export function ScanBillModal({ isOpen, onClose, onExtracted }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

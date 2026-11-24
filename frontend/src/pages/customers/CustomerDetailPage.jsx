@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -867,7 +868,7 @@ export default function CustomerDetailPage() {
       )}
 
       {/* Add / Edit Recurring Product Modal */}
-      {(isAddProductOpen || editingProduct) && (
+      {(isAddProductOpen || editingProduct) && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700 mb-4">
@@ -1059,7 +1060,8 @@ export default function CustomerDetailPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Remove Product Confirmation */}

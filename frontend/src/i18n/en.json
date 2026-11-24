@@ -15,7 +15,8 @@
     "insights": "AI Insights",
     "assistant": "AI Assistant",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "aiTools": "AI Tools"
   },
   "common": {
     "search": "Search...",

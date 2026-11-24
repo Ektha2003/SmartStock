@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import inventoryService from '../../services/inventoryService';
 import { X, Loader2, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
@@ -70,7 +71,7 @@ export function StockAdjustmentModal({
     });
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         onClick={onClose}
@@ -229,7 +230,8 @@ export function StockAdjustmentModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

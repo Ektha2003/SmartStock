@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { ArrowLeft, ArrowDownLeft, ArrowUpRight, SlidersHorizontal, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import inventoryService from '../../services/inventoryService';
@@ -7,7 +7,6 @@ import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchInput from '../../components/common/SearchInput';
 import FilterDropdown from '../../components/common/FilterDropdown';
-import Pagination from '../../components/common/Pagination';
 import { formatDateTime } from '../../utils/formatters';
 import { TransactionType } from '../../utils/constants';
 
@@ -18,27 +17,19 @@ export function StockTransactionsPage() {
   const pageSize = 10;
 
   const { data: transactionsData, isLoading } = useQuery({
-    queryKey: ['inventory', 'transactions', currentPage, typeFilter],
+    queryKey: ['inventory', 'transactions', currentPage, typeFilter, search],
     queryFn: () =>
       inventoryService.getTransactions({
         pageNumber: currentPage,
         pageSize,
         type: typeFilter ? Number(typeFilter) : undefined,
+        search: search.trim() || undefined,
       }),
+    placeholderData: keepPreviousData,
   });
 
   const transactions = transactionsData?.items || (Array.isArray(transactionsData) ? transactionsData : []);
   const totalCount = transactionsData?.totalCount || transactions.length;
-
-  const filtered = useMemo(() => {
-    return transactions.filter((t) => {
-      const matchSearch =
-        (t.productName || '').toLowerCase().includes(search.toLowerCase()) ||
-        (t.reference && t.reference.toLowerCase().includes(search.toLowerCase())) ||
-        (t.notes && t.notes.toLowerCase().includes(search.toLowerCase()));
-      return matchSearch;
-    });
-  }, [transactions, search]);
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
@@ -180,16 +171,11 @@ export function StockTransactionsPage() {
 
       <DataTable
         columns={columns}
-        data={filtered}
+        data={transactions}
         isLoading={isLoading}
         emptyTitle="No stock movements found"
         emptyDescription="Transactions will show up here as products are sold or replenished."
-      />
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        pagination={{ currentPage, totalPages, onPageChange: setCurrentPage, totalCount, pageSize }}
       />
     </div>
   );

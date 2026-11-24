@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,7 +25,6 @@ import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchInput from '../../components/common/SearchInput';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import Pagination from '../../components/common/Pagination';
 import StatusBadge from '../../components/common/StatusBadge';
 import { toast } from 'sonner';
 
@@ -305,8 +305,8 @@ export function SuppliersPage() {
         <div className="w-full sm:w-80">
           <SearchInput
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+            onChange={(val) => {
+              setSearch(val);
               setCurrentPage(1);
             }}
             placeholder="Search by name, company, GSTIN or phone..."
@@ -321,19 +321,23 @@ export function SuppliersPage() {
         columns={columns}
         data={paginatedData}
         isLoading={isLoading}
-        emptyMessage="No suppliers registered yet. Click 'Add Supplier' to create your first vendor."
+        emptyTitle={search ? 'No suppliers match your search' : 'No suppliers yet'}
+        emptyDescription={
+          search
+            ? 'Try a different name, company, GSTIN or phone number.'
+            : "Click 'Add Supplier' to create your first vendor."
+        }
+        pagination={{
+          currentPage,
+          totalPages,
+          onPageChange: setCurrentPage,
+          totalCount: filtered.length,
+          pageSize,
+        }}
       />
 
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      )}
-
       {/* Add / Edit Supplier Modal */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-xl overflow-hidden max-h-[90vh] flex flex-col">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -517,7 +521,8 @@ export function SuppliersPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete confirmation dialog */}
