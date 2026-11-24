@@ -2,13 +2,14 @@ import axios from 'axios';
 
 const DEFAULT_API_BASE = 'http://localhost:5000/api/v1';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE;
+const DEFAULT_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 120000; // 120 seconds default
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: DEFAULT_TIMEOUT,
 });
 
 // Request interceptor to inject Bearer token

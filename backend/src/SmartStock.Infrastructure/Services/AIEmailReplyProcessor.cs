@@ -458,7 +458,8 @@ public class AIEmailReplyProcessor : IAIEmailReplyProcessor
             CancellationToken cancellationToken)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-2.5-flash";
+        if (model.Contains("3.8", StringComparison.OrdinalIgnoreCase)) model = "gemini-2.5-flash";
 
         if (!string.IsNullOrWhiteSpace(apiKey) && !apiKey.StartsWith("your_"))
         {

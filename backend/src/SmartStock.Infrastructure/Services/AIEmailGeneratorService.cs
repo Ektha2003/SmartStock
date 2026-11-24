@@ -31,7 +31,8 @@ public class AIEmailGeneratorService : IAIEmailGeneratorService
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-2.5-flash";
+        if (model.Contains("3.8", StringComparison.OrdinalIgnoreCase)) model = "gemini-2.5-flash";
 
         var itemsList = new StringBuilder();
         foreach (var item in order.Items)

@@ -81,7 +81,8 @@ public class AIAssistantService : IAIAssistantService
             .ToListAsync(cancellationToken);
 
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-2.5-flash";
+        if (model.Contains("3.8", StringComparison.OrdinalIgnoreCase)) model = "gemini-2.5-flash";
 
         // If Gemini API Key is missing or unavailable, provide intelligent deterministic fallback
         if (string.IsNullOrWhiteSpace(apiKey) || apiKey.StartsWith("your_"))
@@ -134,15 +135,25 @@ public class AIAssistantService : IAIAssistantService
                 }
             };
 
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
             var jsonPayload = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
+            // Attempt primary model first, fallback to gemini-1.5-flash if needed
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
             var httpResponse = await _httpClient.PostAsync(url, content, cancellationToken);
+
+            if (!httpResponse.IsSuccessStatusCode && model != "gemini-1.5-flash")
+            {
+                _logger.LogInformation("Gemini {Model} returned {StatusCode}. Retrying with gemini-1.5-flash fallback.", model, httpResponse.StatusCode);
+                var fallbackUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={apiKey}";
+                var retryContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                httpResponse = await _httpClient.PostAsync(fallbackUrl, retryContent, cancellationToken);
+            }
+
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
-                _logger.LogWarning("Gemini API call failed with status {StatusCode}: {ErrorBody}. Falling back.", httpResponse.StatusCode, errorBody);
+                _logger.LogWarning("Gemini API call failed with status {StatusCode}: {ErrorBody}. Serving deterministic fallback.", httpResponse.StatusCode, errorBody);
 
                 var fallback = GenerateDeterministicFallback(question, businessName, products.Count, totalStockValue, totalSalesToday, totalSalesMonth, lowStockProducts, outOfStockProducts, topSellers);
                 return ApiResponse<AIAssistantResponseDto>.Ok(fallback, "Response served via SmartStock assistant (Gemini offline fallback).");
@@ -150,8 +161,18 @@ public class AIAssistantService : IAIAssistantService
 
             var responseString = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
             var parsedJson = JsonNode.Parse(responseString);
-            var generatedText = parsedJson?["candidates"]?[0]?["content"]?[0]?["text"]?.ToString() 
-                                ?? parsedJson?["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString();
+
+            string? generatedText = null;
+            var partsNode = parsedJson?["candidates"]?[0]?["content"]?["parts"]?.AsArray();
+            if (partsNode != null && partsNode.Count > 0)
+            {
+                var texts = partsNode.Select(p => p?["text"]?.ToString()).Where(t => !string.IsNullOrWhiteSpace(t));
+                generatedText = string.Join("\n", texts);
+            }
+            else
+            {
+                generatedText = parsedJson?["candidates"]?[0]?["content"]?[0]?["text"]?.ToString();
+            }
 
             if (string.IsNullOrWhiteSpace(generatedText))
             {

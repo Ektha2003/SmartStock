@@ -41,14 +41,16 @@ export const supplierInvoiceService = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      // AI extraction can take well over the default 10s, especially for multi-page PDFs.
-      timeout: 180000,
+      // Multi-page OCR extraction and Gemini multimodal calls can take up to several minutes.
+      timeout: 300000, // 5 minutes
     });
     return extractData(response);
   },
 
   async rematchProducts(id) {
-    const response = await apiClient.post(`/supplier-invoices/${id}/rematch`);
+    const response = await apiClient.post(`/supplier-invoices/${id}/rematch`, null, {
+      timeout: 180000,
+    });
     return extractData(response);
   },
 
@@ -68,13 +70,16 @@ export const supplierInvoiceService = {
   },
 
   async approveInvoice(invoiceId, data) {
-    const response = await apiClient.post(`/supplier-invoices/${invoiceId}/approve`, data);
+    const response = await apiClient.post(`/supplier-invoices/${invoiceId}/approve`, data, {
+      timeout: 180000,
+    });
     return extractData(response);
   },
 
   async rejectInvoice(invoiceId, reason = null) {
     const response = await apiClient.post(`/supplier-invoices/${invoiceId}/reject`, null, {
       params: { reason },
+      timeout: 60000,
     });
     return extractData(response);
   },
@@ -100,16 +105,24 @@ export const supplierInvoiceService = {
   },
 
   async compareInvoice(id) {
-    const response = await apiClient.get(`/supplier-invoices/${id}/compare`);
+    const response = await apiClient.get(`/supplier-invoices/${id}/compare`, {
+      timeout: 120000,
+    });
     return extractData(response);
   },
 
   async queryAssistant(query, supplierId = null, invoiceId = null) {
-    const response = await apiClient.post('/supplier-invoices/assistant-query', {
-      query,
-      supplierId,
-      invoiceId,
-    });
+    const response = await apiClient.post(
+      '/supplier-invoices/assistant-query',
+      {
+        query,
+        supplierId,
+        invoiceId,
+      },
+      {
+        timeout: 180000,
+      }
+    );
     return extractData(response);
   },
 };

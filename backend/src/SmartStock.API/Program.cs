@@ -28,6 +28,21 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+// Configure Server Limits & Request Timeouts
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(5);
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(5);
+    options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; // 100MB
+});
+
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100MB
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
 // Database Connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                        ?? builder.Configuration["ConnectionStrings__DefaultConnection"]
@@ -39,6 +54,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         npgsqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
         npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorCodesToAdd: null);
+        npgsqlOptions.CommandTimeout(180);
     });
 });
 
@@ -106,25 +122,25 @@ builder.Services.AddScoped<IRecurringOrderSchedulerService, RecurringOrderSchedu
 
 builder.Services.AddHttpClient<IAIEmailGeneratorService, AIEmailGeneratorService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromMinutes(3);
 });
 
 builder.Services.AddHttpClient<IAIEmailReplyProcessor, AIEmailReplyProcessor>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromMinutes(3);
 });
 
 builder.Services.AddHostedService<RecurringOrderBackgroundService>();
 
 builder.Services.AddHttpClient<IAIAssistantService, AIAssistantService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromMinutes(3);
 });
 
 builder.Services.AddHttpClient<IInvoiceScannerService, InvoiceScannerService>(client =>
 {
-    // Multi-page invoices can take a while to read; the frontend waits up to 3 minutes.
-    client.Timeout = TimeSpan.FromSeconds(120);
+    // Multi-page invoices and Gemini multimodal extraction can take up to several minutes.
+    client.Timeout = TimeSpan.FromMinutes(5);
 });
 
 // FluentValidation

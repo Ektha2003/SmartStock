@@ -62,12 +62,19 @@ public class SupplierInvoiceService : ISupplierInvoiceService
             documentHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
 
-        // 2. Run OCR/AI extraction first. It throws a user-readable AppException when the
-        //    invoice cannot be read, so nothing is saved for a failed scan.
+        // 2. Run OCR/AI extraction first with safe fallback so upload never fails with 503
         memoryStream.Position = 0;
-        var extractionResult = await _invoiceScannerService.ExtractInvoiceAsync(memoryStream, fileName, contentType, cancellationToken);
-        var extractedData = extractionResult.Data
-            ?? throw new AppException("The AI service returned no invoice data. Please try again.", 502);
+        InvoiceExtractResponseDto extractedData;
+        try
+        {
+            var extractionResult = await _invoiceScannerService.ExtractInvoiceAsync(memoryStream, fileName, contentType, cancellationToken);
+            extractedData = extractionResult.Data ?? InvoiceScannerService.GenerateFallbackExtraction(fileName, "AI scanner returned empty data. Draft created for manual review.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Invoice scanning encountered an issue for {FileName}. Creating review draft.", fileName);
+            extractedData = InvoiceScannerService.GenerateFallbackExtraction(fileName, "AI scanning encountered a temporary issue. File saved securely for manual review.");
+        }
 
         // 3. Save physical file securely in uploads/invoices/{businessId}
         var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "invoices", businessId.ToString());
