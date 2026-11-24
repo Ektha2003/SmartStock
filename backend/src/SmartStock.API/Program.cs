@@ -123,7 +123,8 @@ builder.Services.AddHttpClient<IAIAssistantService, AIAssistantService>(client =
 
 builder.Services.AddHttpClient<IInvoiceScannerService, InvoiceScannerService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(60);
+    // Multi-page invoices can take a while to read; the frontend waits up to 3 minutes.
+    client.Timeout = TimeSpan.FromSeconds(120);
 });
 
 // FluentValidation

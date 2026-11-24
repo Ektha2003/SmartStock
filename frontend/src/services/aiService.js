@@ -131,21 +131,20 @@ export const aiService = {
    */
   async extractInvoiceFromBill(file) {
     if (!isMockEnabled()) {
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        const response = await apiClient.post('/ai/invoice-extract', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        return extractData(response);
-      } catch (err) {
-        console.warn('POST /ai/invoice-extract failed, falling back to smart extractor:', err);
-      }
+      // Real mode: surface the backend's error instead of inventing invoice data.
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await apiClient.post('/ai/invoice-extract', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        // AI extraction can take well over the default 10s, especially for multi-page PDFs.
+        timeout: 180000,
+      });
+      return extractData(response);
     }
 
-    // Realistic smart extractor
+    // Demo (mock) mode only: sample extraction
     await new Promise((r) => setTimeout(r, 1200));
     const suppliers = mockDb.getSuppliers();
     const sup = suppliers[0] || { supplierName: 'Delhi Wholesale FMCG Traders' };

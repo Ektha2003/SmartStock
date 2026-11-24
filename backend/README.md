@@ -202,7 +202,7 @@ cp .env.example .env
 | `Jwt__AccessTokenExpirationMinutes` | Access Token Lifetime | `1440` (24 hours) |
 | `Jwt__RefreshTokenExpirationDays` | Refresh Token Lifetime | `7` |
 | `Gemini__ApiKey` | Google AI Studio Gemini API Key | *(Optional)* |
-| `Gemini__Model` | Gemini AI model identifier | `gemini-2.5-flash` |
+| `Gemini__Model` | Gemini AI model identifier | `gemini-3.8-flash` |
 | `Frontend__Origin` | Allowed CORS origins (semicolon-delimited) | `http://localhost:5173;http://localhost:3000` |
 
 ---

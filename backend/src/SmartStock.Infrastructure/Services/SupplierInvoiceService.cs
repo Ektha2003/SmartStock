@@ -62,7 +62,14 @@ public class SupplierInvoiceService : ISupplierInvoiceService
             documentHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
 
-        // 2. Save physical file securely in uploads/invoices/{businessId}
+        // 2. Run OCR/AI extraction first. It throws a user-readable AppException when the
+        //    invoice cannot be read, so nothing is saved for a failed scan.
+        memoryStream.Position = 0;
+        var extractionResult = await _invoiceScannerService.ExtractInvoiceAsync(memoryStream, fileName, contentType, cancellationToken);
+        var extractedData = extractionResult.Data
+            ?? throw new AppException("The AI service returned no invoice data. Please try again.", 502);
+
+        // 3. Save physical file securely in uploads/invoices/{businessId}
         var uploadsFolder = Path.Combine(_environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "invoices", businessId.ToString());
         Directory.CreateDirectory(uploadsFolder);
 
@@ -70,11 +77,6 @@ public class SupplierInvoiceService : ISupplierInvoiceService
         var fullPath = Path.Combine(uploadsFolder, safeFileName);
         await File.WriteAllBytesAsync(fullPath, fileBytes, cancellationToken);
         var relativeFilePath = $"/uploads/invoices/{businessId}/{safeFileName}";
-
-        // 3. Run OCR/AI extraction
-        memoryStream.Position = 0;
-        var extractionResult = await _invoiceScannerService.ExtractInvoiceAsync(memoryStream, fileName, contentType, cancellationToken);
-        var extractedData = extractionResult.Data ?? new InvoiceExtractResponseDto();
 
         // 4. Resolve or verify supplier
         Supplier? matchedSupplier = null;

@@ -41,6 +41,8 @@ export const supplierInvoiceService = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      // AI extraction can take well over the default 10s, especially for multi-page PDFs.
+      timeout: 180000,
     });
     return extractData(response);
   },
