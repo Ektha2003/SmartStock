@@ -40,13 +40,21 @@ public class Supplier : BaseEntity, IBusinessScopedEntity
 {
     public Guid BusinessId { get; set; }
     public string SupplierName { get; set; } = string.Empty;
+    public string? CompanyName { get; set; }
     public string ContactPerson { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string? GstNumber { get; set; }
+    public string? PanNumber { get; set; }
+    public string? BillingAddress { get; set; }
     public string Address { get; set; } = string.Empty;
+    public string? PaymentTerms { get; set; }
+    public string? Notes { get; set; }
     public bool IsActive { get; set; } = true;
 
     // Navigation properties
     public Business Business { get; set; } = null!;
     public ICollection<Purchase> Purchases { get; set; } = new List<Purchase>();
+    public ICollection<SupplierInvoice> Invoices { get; set; } = new List<SupplierInvoice>();
+    public ICollection<ProductPurchasePriceHistory> PriceHistories { get; set; } = new List<ProductPurchasePriceHistory>();
 }

@@ -22,6 +22,18 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<PurchaseItem> PurchaseItems => Set<PurchaseItem>();
     public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<CustomerRecurringSetting> CustomerRecurringSettings => Set<CustomerRecurringSetting>();
+    public DbSet<CustomerRecurringProduct> CustomerRecurringProducts => Set<CustomerRecurringProduct>();
+    public DbSet<RecurringOrder> RecurringOrders => Set<RecurringOrder>();
+    public DbSet<RecurringOrderItem> RecurringOrderItems => Set<RecurringOrderItem>();
+    public DbSet<RecurringOrderApprovalToken> RecurringOrderApprovalTokens => Set<RecurringOrderApprovalToken>();
+    public DbSet<CustomerEmailLog> CustomerEmailLogs => Set<CustomerEmailLog>();
+    public DbSet<AIEmailProcessingLog> AIEmailProcessingLogs => Set<AIEmailProcessingLog>();
+    public DbSet<SupplierInvoice> SupplierInvoices => Set<SupplierInvoice>();
+    public DbSet<SupplierInvoiceItem> SupplierInvoiceItems => Set<SupplierInvoiceItem>();
+    public DbSet<ProductPurchasePriceHistory> ProductPurchasePriceHistories => Set<ProductPurchasePriceHistory>();
+    public DbSet<AIInvoiceProcessingLog> AIInvoiceProcessingLogs => Set<AIInvoiceProcessingLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

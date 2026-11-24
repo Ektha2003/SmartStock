@@ -85,29 +85,49 @@ public class SupplierDto
     public Guid Id { get; set; }
     public Guid BusinessId { get; set; }
     public string SupplierName { get; set; } = string.Empty;
+    public string? CompanyName { get; set; }
     public string ContactPerson { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string? GstNumber { get; set; }
+    public string? PanNumber { get; set; }
+    public string? BillingAddress { get; set; }
     public string Address { get; set; } = string.Empty;
+    public string? PaymentTerms { get; set; }
+    public string? Notes { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int InvoicesCount { get; set; }
+    public int PurchasesCount { get; set; }
 }
 
 public class CreateSupplierDto
 {
     public string SupplierName { get; set; } = string.Empty;
+    public string? CompanyName { get; set; }
     public string ContactPerson { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string? GstNumber { get; set; }
+    public string? PanNumber { get; set; }
+    public string? BillingAddress { get; set; }
     public string Address { get; set; } = string.Empty;
+    public string? PaymentTerms { get; set; }
+    public string? Notes { get; set; }
 }
 
 public class UpdateSupplierDto
 {
     public string SupplierName { get; set; } = string.Empty;
+    public string? CompanyName { get; set; }
     public string ContactPerson { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string? GstNumber { get; set; }
+    public string? PanNumber { get; set; }
+    public string? BillingAddress { get; set; }
     public string Address { get; set; } = string.Empty;
+    public string? PaymentTerms { get; set; }
+    public string? Notes { get; set; }
     public bool IsActive { get; set; } = true;
 }

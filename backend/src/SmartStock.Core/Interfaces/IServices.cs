@@ -54,6 +54,10 @@ public interface ISupplierService
     Task<ApiResponse<SupplierDto>> CreateAsync(CreateSupplierDto dto, CancellationToken cancellationToken = default);
     Task<ApiResponse<SupplierDto>> UpdateAsync(Guid id, UpdateSupplierDto dto, CancellationToken cancellationToken = default);
     Task<ApiResponse<bool>> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ApiResponse<SupplierDetailExtendedDto>> GetDetailExtendedAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ApiResponse<IReadOnlyList<SupplierSuppliedProductDto>>> GetSuppliedProductsAsync(Guid supplierId, CancellationToken cancellationToken = default);
+    Task<ApiResponse<PagedResult<SupplierInvoiceHistoryDto>>> GetSupplierInvoicesAsync(Guid supplierId, PaginationParams pagination, CancellationToken cancellationToken = default);
+    Task<ApiResponse<PagedResult<SupplierPurchaseHistoryDto>>> GetSupplierPurchasesAsync(Guid supplierId, PaginationParams pagination, CancellationToken cancellationToken = default);
 }
 
 public interface ISalesService

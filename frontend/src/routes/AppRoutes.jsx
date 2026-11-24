@@ -22,18 +22,31 @@ import SaleDetailPage from '../pages/sales/SaleDetailPage';
 import PurchasesPage from '../pages/purchases/PurchasesPage';
 import NewPurchasePage from '../pages/purchases/NewPurchasePage';
 import PurchaseDetailPage from '../pages/purchases/PurchaseDetailPage';
+// Suppliers & AI Invoice Automation
 import SuppliersPage from '../pages/suppliers/SuppliersPage';
+import SupplierDetailPage from '../pages/suppliers/SupplierDetailPage';
+import SupplierInvoicesPage from '../pages/invoices/SupplierInvoicesPage';
+import InvoiceReviewPage from '../pages/invoices/InvoiceReviewPage';
 import NotificationsPage from '../pages/notifications/NotificationsPage';
 import InsightsPage from '../pages/insights/InsightsPage';
 import AssistantPage from '../pages/assistant/AssistantPage';
 import SettingsPage from '../pages/settings/SettingsPage';
 import NotFoundPage from '../pages/NotFoundPage';
 
+// Customer & AI Recurring Order Management
+import CustomersPage from '../pages/customers/CustomersPage';
+import CustomerDetailPage from '../pages/customers/CustomerDetailPage';
+import RecurringOrdersPage from '../pages/recurring/RecurringOrdersPage';
+import OrderApprovalPublicPage from '../pages/recurring/OrderApprovalPublicPage';
+
 export function AppRoutes() {
   return (
     <Routes>
       {/* Root redirect */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+      {/* Public Customer Approval Portal (No login required) */}
+      <Route path="/order-approval/:token" element={<OrderApprovalPublicPage />} />
 
       {/* Public Auth routes */}
       <Route
@@ -74,13 +87,21 @@ export function AppRoutes() {
         <Route path="/sales/new" element={<NewSalePage />} />
         <Route path="/sales/:id" element={<SaleDetailPage />} />
 
+        {/* Customers & AI Recurring Orders */}
+        <Route path="/customers" element={<CustomersPage />} />
+        <Route path="/customers/:id" element={<CustomerDetailPage />} />
+        <Route path="/recurring-orders" element={<RecurringOrdersPage />} />
+
         {/* Purchases */}
         <Route path="/purchases" element={<PurchasesPage />} />
         <Route path="/purchases/new" element={<NewPurchasePage />} />
         <Route path="/purchases/:id" element={<PurchaseDetailPage />} />
 
-        {/* Suppliers */}
+        {/* Suppliers & AI Invoices */}
         <Route path="/suppliers" element={<SuppliersPage />} />
+        <Route path="/suppliers/:id" element={<SupplierDetailPage />} />
+        <Route path="/supplier-invoices" element={<SupplierInvoicesPage />} />
+        <Route path="/supplier-invoices/:id/review" element={<InvoiceReviewPage />} />
 
         {/* Intelligence & Alerts */}
         <Route path="/notifications" element={<NotificationsPage />} />

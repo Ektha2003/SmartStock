@@ -32,7 +32,9 @@ export const supplierService = {
       suppliers = suppliers.filter(
         (s) =>
           (s.supplierName || s.name || '').toLowerCase().includes(q) ||
+          (s.companyName || '').toLowerCase().includes(q) ||
           (s.contactPerson || '').toLowerCase().includes(q) ||
+          (s.gstNumber || s.gstin || '').toLowerCase().includes(q) ||
           (s.phone || '').includes(q)
       );
     }
@@ -58,13 +60,73 @@ export const supplierService = {
     return normalizeSupplier(supplier);
   },
 
+  async getSupplierDetail(id) {
+    if (!isMockEnabled()) {
+      try {
+        const response = await apiClient.get(`/suppliers/${id}/detail`);
+        return extractData(response);
+      } catch (err) {
+        console.warn(`GET /suppliers/${id}/detail failed:`, err);
+      }
+    }
+    const supplier = await this.getSupplierById(id);
+    return {
+      ...supplier,
+      recentInvoices: [],
+      recentPurchases: [],
+      suppliedProducts: [],
+    };
+  },
+
+  async getSuppliedProducts(id) {
+    if (!isMockEnabled()) {
+      try {
+        const response = await apiClient.get(`/suppliers/${id}/products`);
+        return extractData(response);
+      } catch (err) {
+        console.warn(`GET /suppliers/${id}/products failed:`, err);
+      }
+    }
+    return [];
+  },
+
+  async getSupplierInvoices(id, params = {}) {
+    if (!isMockEnabled()) {
+      try {
+        const response = await apiClient.get(`/suppliers/${id}/invoices`, { params });
+        return extractData(response);
+      } catch (err) {
+        console.warn(`GET /suppliers/${id}/invoices failed:`, err);
+      }
+    }
+    return { items: [], totalCount: 0 };
+  },
+
+  async getSupplierPurchases(id, params = {}) {
+    if (!isMockEnabled()) {
+      try {
+        const response = await apiClient.get(`/suppliers/${id}/purchases`, { params });
+        return extractData(response);
+      } catch (err) {
+        console.warn(`GET /suppliers/${id}/purchases failed:`, err);
+      }
+    }
+    return { items: [], totalCount: 0 };
+  },
+
   async createSupplier(data) {
     const payload = {
       supplierName: data.supplierName || data.name,
+      companyName: data.companyName || null,
       contactPerson: data.contactPerson,
       phone: data.phone,
       email: data.email || '',
-      address: data.address,
+      gstNumber: data.gstNumber || data.gstin || null,
+      panNumber: data.panNumber || null,
+      billingAddress: data.billingAddress || null,
+      address: data.address || '',
+      paymentTerms: data.paymentTerms || null,
+      notes: data.notes || null,
     };
 
     if (!isMockEnabled()) {
@@ -93,10 +155,17 @@ export const supplierService = {
   async updateSupplier(id, data) {
     const payload = {
       supplierName: data.supplierName || data.name,
+      companyName: data.companyName || null,
       contactPerson: data.contactPerson,
       phone: data.phone,
       email: data.email || '',
-      address: data.address,
+      gstNumber: data.gstNumber || data.gstin || null,
+      panNumber: data.panNumber || null,
+      billingAddress: data.billingAddress || null,
+      address: data.address || '',
+      paymentTerms: data.paymentTerms || null,
+      notes: data.notes || null,
+      isActive: data.status === 'Inactive' ? false : data.isActive ?? true,
     };
 
     if (!isMockEnabled()) {
@@ -140,16 +209,25 @@ export const supplierService = {
 function normalizeSupplier(s) {
   if (!s) return s;
   const name = s.supplierName || s.name || 'Wholesale Supplier';
+  const gstin = s.gstNumber || s.gstin || '';
   return {
     ...s,
     id: s.id,
     name,
     supplierName: name,
+    companyName: s.companyName || '',
     contactPerson: s.contactPerson || '',
     phone: s.phone || '',
     email: s.email || '',
     address: s.address || '',
-    gstin: s.gstin || '',
+    billingAddress: s.billingAddress || '',
+    gstin,
+    gstNumber: gstin,
+    panNumber: s.panNumber || '',
+    paymentTerms: s.paymentTerms || '',
+    notes: s.notes || '',
+    invoicesCount: s.invoicesCount || 0,
+    purchasesCount: s.purchasesCount || 0,
     status: s.isActive === false ? 'Inactive' : 'Active',
   };
 }

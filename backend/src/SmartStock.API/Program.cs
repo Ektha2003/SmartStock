@@ -93,6 +93,28 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IForecastingService, ForecastingService>();
+builder.Services.AddScoped<ISupplierInvoiceService, SupplierInvoiceService>();
+
+// Customer & Recurring Order Management Services
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ICustomerRecurringProductService, CustomerRecurringProductService>();
+builder.Services.AddScoped<ICustomerRecurringSettingService, CustomerRecurringSettingService>();
+builder.Services.AddScoped<IRecurringOrderService, RecurringOrderService>();
+builder.Services.AddScoped<ICustomerPortalService, CustomerPortalService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IRecurringOrderSchedulerService, RecurringOrderSchedulerService>();
+
+builder.Services.AddHttpClient<IAIEmailGeneratorService, AIEmailGeneratorService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<IAIEmailReplyProcessor, AIEmailReplyProcessor>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHostedService<RecurringOrderBackgroundService>();
 
 builder.Services.AddHttpClient<IAIAssistantService, AIAssistantService>(client =>
 {
@@ -201,6 +223,8 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseCors("AllowFrontend");
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

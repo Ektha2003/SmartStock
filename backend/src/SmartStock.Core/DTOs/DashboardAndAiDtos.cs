@@ -113,17 +113,40 @@ public class AIAssistantResponseDto
 public class InvoiceItemExtractDto
 {
     public string ProductName { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? SupplierSku { get; set; }
+    public string? HsnCode { get; set; }
     public decimal Quantity { get; set; }
+    public string Unit { get; set; } = "PCS";
     public decimal UnitPrice { get; set; }
+    public decimal Discount { get; set; }
+    public decimal TaxPercentage { get; set; }
+    public decimal TaxAmount { get; set; }
     public decimal LineTotal { get; set; }
 }
 
 public class InvoiceExtractResponseDto
 {
     public string? SupplierName { get; set; }
+    public string? SupplierGst { get; set; }
     public string? InvoiceNumber { get; set; }
     public DateTime? InvoiceDate { get; set; }
+    public DateTime? DueDate { get; set; }
+    public string? PaymentTerms { get; set; }
+    public string? BillingAddress { get; set; }
+    public string? DeliveryAddress { get; set; }
+    public string? PurchaseOrderNumber { get; set; }
+
+    public decimal SubTotal { get; set; }
+    public decimal Discount { get; set; }
+    public decimal TaxableAmount { get; set; }
+    public decimal Cgst { get; set; }
+    public decimal Sgst { get; set; }
+    public decimal Igst { get; set; }
+    public decimal OtherCharges { get; set; }
     public decimal TotalAmount { get; set; }
+
     public List<InvoiceItemExtractDto> Items { get; set; } = new();
     public string Notes { get; set; } = "Extracted via AI. Please verify before creating purchase.";
+    public string? RawExtractedJson { get; set; }
 }

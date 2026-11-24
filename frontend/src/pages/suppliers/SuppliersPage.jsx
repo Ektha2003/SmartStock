@@ -2,7 +2,22 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Edit2, Trash2, Users, Phone, Mail, MapPin, X, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Users,
+  Phone,
+  Mail,
+  MapPin,
+  X,
+  Loader2,
+  Eye,
+  FileSpreadsheet,
+  Building2,
+  CreditCard
+} from 'lucide-react';
 import { supplierSchema } from '../../validations/supplierSchemas';
 import supplierService from '../../services/supplierService';
 import PageHeader from '../../components/common/PageHeader';
@@ -18,7 +33,7 @@ export function SuppliersPage() {
 
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6;
+  const pageSize = 8;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
@@ -44,11 +59,16 @@ export function SuppliersPage() {
     resolver: zodResolver(supplierSchema),
     defaultValues: {
       name: '',
+      companyName: '',
       contactPerson: '',
       phone: '',
       email: '',
       address: '',
+      billingAddress: '',
       gstin: '',
+      panNumber: '',
+      paymentTerms: 'Net 30 Days',
+      notes: '',
       status: 'Active',
     },
   });
@@ -77,21 +97,26 @@ export function SuppliersPage() {
     mutationFn: (id) => supplierService.deleteSupplier(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      toast.success('Supplier removed');
+      toast.success('Supplier deactivated');
       setDeleteId(null);
     },
-    onError: (err) => toast.error(err.message || 'Failed to remove supplier'),
+    onError: (err) => toast.error(err.message || 'Failed to deactivate supplier'),
   });
 
   const handleOpenAdd = () => {
     setEditingSupplier(null);
     reset({
       name: '',
+      companyName: '',
       contactPerson: '',
       phone: '',
       email: '',
       address: '',
+      billingAddress: '',
       gstin: '',
+      panNumber: '',
+      paymentTerms: 'Net 30 Days',
+      notes: '',
       status: 'Active',
     });
     setIsModalOpen(true);
@@ -100,12 +125,17 @@ export function SuppliersPage() {
   const handleOpenEdit = (sup) => {
     setEditingSupplier(sup);
     reset({
-      name: sup.name,
-      contactPerson: sup.contactPerson,
-      phone: sup.phone,
+      name: sup.name || sup.supplierName,
+      companyName: sup.companyName || '',
+      contactPerson: sup.contactPerson || '',
+      phone: sup.phone || '',
       email: sup.email || '',
-      address: sup.address,
-      gstin: sup.gstin || '',
+      address: sup.address || '',
+      billingAddress: sup.billingAddress || '',
+      gstin: sup.gstin || sup.gstNumber || '',
+      panNumber: sup.panNumber || '',
+      paymentTerms: sup.paymentTerms || 'Net 30 Days',
+      notes: sup.notes || '',
       status: sup.status || 'Active',
     });
     setIsModalOpen(true);
@@ -129,9 +159,11 @@ export function SuppliersPage() {
     if (!q) return suppliers;
     return suppliers.filter((s) => {
       const name = (s.name || s.supplierName || '').toLowerCase();
+      const comp = (s.companyName || '').toLowerCase();
       const contact = (s.contactPerson || '').toLowerCase();
       const phone = String(s.phone || '');
-      return name.includes(q) || contact.includes(q) || phone.includes(q);
+      const gst = (s.gstin || s.gstNumber || '').toLowerCase();
+      return name.includes(q) || comp.includes(q) || contact.includes(q) || phone.includes(q) || gst.includes(q);
     });
   }, [suppliers, search]);
 
@@ -143,15 +175,21 @@ export function SuppliersPage() {
 
   const columns = [
     {
-      header: 'Supplier / Wholesale Business',
+      header: 'Supplier / Company',
       key: 'name',
       render: (r) => (
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-indigo-50 text-indigo-700 rounded-lg">
-            <Users className="w-4 h-4" />
+            <Building2 className="w-4 h-4" />
           </div>
           <div>
-            <p className="font-semibold text-slate-900">{r.name}</p>
+            <Link
+              to={`/suppliers/${r.id}`}
+              className="font-semibold text-slate-900 hover:text-indigo-600 transition"
+            >
+              {r.name}
+            </Link>
+            {r.companyName && <p className="text-xs text-slate-500">{r.companyName}</p>}
             {r.gstin && <p className="text-[11px] text-slate-400 font-mono">GST: {r.gstin}</p>}
           </div>
         </div>
@@ -160,7 +198,12 @@ export function SuppliersPage() {
     {
       header: 'Contact Person',
       key: 'contactPerson',
-      render: (r) => <span className="font-medium text-slate-800">{r.contactPerson}</span>,
+      render: (r) => (
+        <div>
+          <span className="font-medium text-slate-800">{r.contactPerson}</span>
+          {r.paymentTerms && <p className="text-[11px] text-slate-400">{r.paymentTerms}</p>}
+        </div>
+      ),
     },
     {
       header: 'Contact Info',
@@ -181,12 +224,17 @@ export function SuppliersPage() {
       ),
     },
     {
-      header: 'Location / Market',
-      key: 'address',
+      header: 'Invoices',
+      key: 'invoices',
+      align: 'center',
       render: (r) => (
-        <p className="text-xs text-slate-600 max-w-[220px] truncate" title={r.address}>
-          {r.address}
-        </p>
+        <Link
+          to={`/supplier-invoices?supplierId=${r.id}`}
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition"
+        >
+          <FileSpreadsheet className="w-3 h-3" />
+          <span>{r.invoicesCount ?? 0} Invoices</span>
+        </Link>
       ),
     },
     {
@@ -201,6 +249,13 @@ export function SuppliersPage() {
       align: 'right',
       render: (r) => (
         <div className="flex items-center justify-end gap-1">
+          <Link
+            to={`/suppliers/${r.id}`}
+            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition"
+            title="View Supplier Profile & Purchases"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
           <button
             onClick={() => handleOpenEdit(r)}
             className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition"
@@ -223,31 +278,42 @@ export function SuppliersPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Supplier Directory"
-        subtitle="Manage relationships with Mandi grain wholesalers, edible oil distributors, and FMCG vendors."
+        title="Supplier Management"
+        subtitle="Manage wholesale vendors, Mandi distributors, and direct invoice pipelines."
         breadcrumbs={[{ label: 'Suppliers' }]}
         action={
-          <button
-            onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Supplier</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/supplier-invoices"
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-sm font-semibold rounded-lg transition"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>AI Invoices</span>
+            </Link>
+            <button
+              onClick={handleOpenAdd}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Supplier</span>
+            </button>
+          </div>
         }
       />
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-        <SearchInput
-          value={search}
-          onChange={(val) => {
-            setSearch(val);
-            setCurrentPage(1);
-          }}
-          placeholder="Search by vendor name, person, or phone..."
-        />
+        <div className="w-full sm:w-80">
+          <SearchInput
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            placeholder="Search by name, company, GSTIN or phone..."
+          />
+        </div>
         <div className="text-xs text-slate-500 font-medium">
-          Total Suppliers: <span className="font-semibold text-slate-900">{filtered.length}</span>
+          Showing {paginatedData.length} of {filtered.length} suppliers
         </div>
       </div>
 
@@ -255,49 +321,59 @@ export function SuppliersPage() {
         columns={columns}
         data={paginatedData}
         isLoading={isLoading}
-        emptyTitle="No suppliers found"
-        emptyDescription="Add wholesale distributors to streamline purchasing and AI reorder recommendations."
+        emptyMessage="No suppliers registered yet. Click 'Add Supplier' to create your first vendor."
       />
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
 
-      {/* Add / Edit modal */}
+      {/* Add / Edit Supplier Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={handleCloseModal}
-            className="fixed -inset-10 bg-slate-900/50 backdrop-blur-sm"
-          />
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 relative z-10 animate-in fade-in">
-            <button
-              onClick={handleCloseModal}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-lg font-bold text-slate-900 mb-1">
-              {editingSupplier ? 'Edit Supplier' : 'Add New Wholesale Supplier'}
-            </h3>
-            <p className="text-xs text-slate-500 mb-4">
-              Enter wholesaler contact info and address.
-            </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="font-semibold text-slate-900 text-base">
+                {editingSupplier ? 'Edit Supplier Profile' : 'Add New Supplier'}
+              </h3>
+              <button
+                onClick={handleCloseModal}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Business / Wholesaler Name *
-                </label>
-                <input
-                  type="text"
-                  {...register('name')}
-                  placeholder="e.g. Lakshmi Wholesale Traders"
-                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
-                />
-                {errors.name && <p className="text-xs text-rose-600 mt-1">{errors.name.message}</p>}
+            <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Supplier Name *
+                  </label>
+                  <input
+                    type="text"
+                    {...register('name')}
+                    placeholder="e.g. Metro Wholesale"
+                    className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                  />
+                  {errors.name && <p className="text-xs text-rose-600 mt-1">{errors.name.message}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Company Legal Name
+                  </label>
+                  <input
+                    type="text"
+                    {...register('companyName')}
+                    placeholder="e.g. Metro Cash & Carry India Pvt Ltd"
+                    className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -338,7 +414,7 @@ export function SuppliersPage() {
                   <input
                     type="email"
                     {...register('email')}
-                    placeholder="orders@lakshmi.in"
+                    placeholder="orders@metro.in"
                     className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
                   />
                   {errors.email && <p className="text-xs text-rose-600 mt-1">{errors.email.message}</p>}
@@ -346,28 +422,78 @@ export function SuppliersPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    GSTIN (Optional)
+                    Payment Terms
+                  </label>
+                  <input
+                    type="text"
+                    {...register('paymentTerms')}
+                    placeholder="e.g. Net 15 Days, Cash On Delivery"
+                    className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    GST Number (Optional)
                   </label>
                   <input
                     type="text"
                     {...register('gstin')}
-                    placeholder="07AAAAA0000A1Z5"
-                    className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono"
+                    placeholder="27AAAAA0000A1Z5"
+                    className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono uppercase"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    PAN Number (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    {...register('panNumber')}
+                    placeholder="AAAAA0000A"
+                    className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono uppercase"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Mandi / Depot Address *
+                  Supplier Physical Address *
                 </label>
                 <input
                   type="text"
                   {...register('address')}
-                  placeholder="Shop No, Mandi / Market, City"
+                  placeholder="Shop No, Mandi / Market, City, State"
                   className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
                 />
                 {errors.address && <p className="text-xs text-rose-600 mt-1">{errors.address.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Billing Address (Optional)
+                </label>
+                <input
+                  type="text"
+                  {...register('billingAddress')}
+                  placeholder="Registered corporate billing address"
+                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Notes
+                </label>
+                <textarea
+                  rows={2}
+                  {...register('notes')}
+                  placeholder="Delivery timing preferences, preferred payment modes..."
+                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+                />
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
@@ -400,13 +526,12 @@ export function SuppliersPage() {
         onClose={() => setDeleteId(null)}
         onConfirm={() => deleteMutation.mutate(deleteId)}
         isLoading={deleteMutation.isPending}
-        title="Remove Supplier"
+        title="Deactivate Supplier"
         description="Are you sure you want to deactivate this supplier from your directory?"
-        confirmText="Remove Supplier"
+        confirmText="Deactivate"
       />
     </div>
   );
 }
 
 export default SuppliersPage;
-

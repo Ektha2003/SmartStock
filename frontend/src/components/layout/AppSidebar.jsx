@@ -16,6 +16,9 @@ import {
   FolderTree,
   Store,
   X,
+  UserCheck,
+  Repeat,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import useAuth from '../../hooks/useAuth';
@@ -56,8 +59,11 @@ export function AppSidebar({ isOpen, onClose }) {
     { label: t('nav.inventory'), to: '/inventory', icon: Boxes },
     { label: t('nav.transactions'), to: '/inventory/transactions', icon: ArrowUpDown },
     { label: t('nav.sales'), to: '/sales', icon: ShoppingCart },
+    { label: t('nav.customers') || 'Customers', to: '/customers', icon: UserCheck },
+    { label: t('nav.recurringOrders') || 'Recurring Orders', to: '/recurring-orders', icon: Repeat },
     { label: t('nav.purchases'), to: '/purchases', icon: Truck },
     { label: t('nav.suppliers'), to: '/suppliers', icon: Users },
+    { label: t('nav.supplierInvoices') || 'AI Invoices', to: '/supplier-invoices', icon: FileSpreadsheet, highlight: true },
     { label: t('nav.notifications'), to: '/notifications', icon: Bell, badge: unreadAlerts },
     { label: t('nav.insights'), to: '/insights', icon: Sparkles, highlight: true },
     { label: t('nav.assistant'), to: '/assistant', icon: BotMessageSquare, highlight: true },

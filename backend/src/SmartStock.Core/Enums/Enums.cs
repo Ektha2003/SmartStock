@@ -39,3 +39,98 @@ public enum StockRiskLevel
     Medium = 3,
     Healthy = 4
 }
+
+public enum ContactMethod
+{
+    Email = 1,
+    WhatsApp = 2,
+    Sms = 3,
+    Phone = 4
+}
+
+public enum RecurringFrequency
+{
+    Every7Days = 1,
+    Every15Days = 2,
+    Every30Days = 3,
+    EveryMonth = 4,
+    Every2Months = 5,
+    CustomDays = 6
+}
+
+public enum SubscriptionStatus
+{
+    Active = 1,
+    Paused = 2,
+    Cancelled = 3
+}
+
+public enum OrderSource
+{
+    Manual = 1,
+    Recurring = 2,
+    AiAssisted = 3
+}
+
+public enum RecurringOrderStatus
+{
+    Draft = 1,
+    PendingCustomerApproval = 2,
+    ModificationRequested = 3,
+    Approved = 4,
+    Skipped = 5,
+    Confirmed = 6,
+    Processing = 7,
+    Dispatched = 8,
+    Cancelled = 9,
+    Expired = 10
+}
+
+public enum EmailDirection
+{
+    Outbound = 1,
+    Inbound = 2
+}
+
+public enum EmailStatus
+{
+    Queued = 1,
+    Sent = 2,
+    Failed = 3,
+    Received = 4,
+    Processed = 5
+}
+
+public enum AIParsedIntent
+{
+    ApproveOrder = 1,
+    ModifyOrder = 2,
+    AddProduct = 3,
+    RemoveProduct = 4,
+    SkipOrder = 5,
+    RescheduleOrder = 6,
+    ChangeRecurringPreferences = 7,
+    GeneralQuery = 8,
+    Unknown = 9
+}
+
+public enum SupplierInvoiceStatus
+{
+    Uploaded = 1,
+    Extracting = 2,
+    ReadyForReview = 3,
+    Approved = 4,
+    Rejected = 5,
+    Duplicate = 6
+}
+
+public enum ProductMatchStatus
+{
+    ExactMatch = 1,
+    HighConfidenceMatch = 2,
+    PossibleMatch = 3,
+    NoMatch = 4,
+    MultipleMatches = 5,
+    UserConfirmed = 6,
+    NewProductCreated = 7
+}

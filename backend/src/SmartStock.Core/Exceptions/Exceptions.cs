@@ -71,3 +71,15 @@ public class InsufficientStockException : AppException
     {
     }
 }
+
+public class NotFoundAppException : NotFoundException
+{
+    public NotFoundAppException(string resourceName, object key) : base(resourceName, key) { }
+    public NotFoundAppException(string message) : base(message) { }
+}
+
+public class DuplicateEntityException : ConflictAppException
+{
+    public DuplicateEntityException(string entityName, string field, object value)
+        : base($"{entityName} with {field} '{value}' already exists.") { }
+}

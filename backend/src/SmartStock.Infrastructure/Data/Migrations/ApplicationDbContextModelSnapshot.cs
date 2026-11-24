@@ -22,6 +22,133 @@ namespace SmartStock.Infrastructure.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("SmartStock.Core.Entities.AIEmailProcessingLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ConfidenceScore")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("EmailLogId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ExecutionSummary")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("ExtractedDataJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActionExecuted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ManualReviewReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("ParsedIntent")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RawEmailText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("RecurringOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("RequiresManualReview")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ValidationErrors")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("EmailLogId");
+
+                    b.HasIndex("RecurringOrderId");
+
+                    b.HasIndex("RequiresManualReview");
+
+                    b.ToTable("ai_email_processing_logs", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.AIInvoiceProcessingLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ConfidenceScore")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Errors")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("ExecutionSummary")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("ExtractedDataJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("SupplierInvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Stage");
+
+                    b.HasIndex("SupplierInvoiceId");
+
+                    b.ToTable("ai_invoice_processing_logs", (string)null);
+                });
+
             modelBuilder.Entity("SmartStock.Core.Entities.Business", b =>
                 {
                     b.Property<Guid>("Id")
@@ -106,6 +233,307 @@ namespace SmartStock.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("categories", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.Customer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BillingAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DefaultDeliveryInstructions")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("DeliveryAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("PreferredContactMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("RecurringOrderEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("Phone");
+
+                    b.HasIndex("BusinessId", "Email")
+                        .IsUnique();
+
+                    b.ToTable("customers", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.CustomerEmailLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("FromEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("MessageId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("RecurringOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("ThreadId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ToEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("RecurringOrderId");
+
+                    b.HasIndex("ThreadId");
+
+                    b.ToTable("customer_email_logs", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.CustomerRecurringProduct", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("DefaultQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<decimal?>("MaxQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal?>("MinQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal?>("PriceOverride")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProductInstructions")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("CustomerId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("customer_recurring_products", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.CustomerRecurringSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("AutoEmailEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FrequencyType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("IntervalDays")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("LastOrderGeneratedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("NextOrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("PreferredDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PreferredDeliveryTime")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ReminderBeforeDeliveryDays")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("RequireCustomerApproval")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SubscriptionStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValue("Asia/Kolkata");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
+
+                    b.HasIndex("NextOrderDate");
+
+                    b.HasIndex("SubscriptionStatus");
+
+                    b.ToTable("customer_recurring_settings", (string)null);
                 });
 
             modelBuilder.Entity("SmartStock.Core.Entities.Notification", b =>
@@ -236,6 +664,63 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.ToTable("products", (string)null);
                 });
 
+            modelBuilder.Entity("SmartStock.Core.Entities.ProductPurchasePriceHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("NewPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<decimal>("OldPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PurchaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SupplierInvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("EffectiveDate");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("SupplierInvoiceId");
+
+                    b.ToTable("product_purchase_price_histories", (string)null);
+                });
+
             modelBuilder.Entity("SmartStock.Core.Entities.Purchase", b =>
                 {
                     b.Property<Guid>("Id")
@@ -314,6 +799,203 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.ToTable("purchase_items", (string)null);
                 });
 
+            modelBuilder.Entity("SmartStock.Core.Entities.RecurringOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ApprovalRequestedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ConfirmedSaleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CustomerApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("ExpectedDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastCustomerResponseAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ManualReviewReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("OrderSource")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PreferredDeliveryTime")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("ReminderSentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("RequiresManualReview")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ScheduledOrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SpecialInstructions")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("ConfirmedSaleId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ExpectedDeliveryDate");
+
+                    b.HasIndex("OrderNumber")
+                        .IsUnique();
+
+                    b.HasIndex("RequiresManualReview");
+
+                    b.HasIndex("ScheduledOrderDate");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("recurring_orders", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.RecurringOrderApprovalToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("RecurringOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("RecurringOrderId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("recurring_order_approval_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.RecurringOrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsAddedByCustomer")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsModifiedByCustomer")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("OriginalQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProductInstructions")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<Guid>("RecurringOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("RecurringOrderId");
+
+                    b.ToTable("recurring_order_items", (string)null);
+                });
+
             modelBuilder.Entity("SmartStock.Core.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -361,6 +1043,9 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -369,6 +1054,11 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("OrderSource")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("SaleDate")
                         .HasColumnType("timestamp with time zone");
@@ -383,6 +1073,8 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BusinessId");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("InvoiceNumber");
 
@@ -492,8 +1184,16 @@ namespace SmartStock.Infrastructure.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("BillingAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<Guid>("BusinessId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("CompanyName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("ContactPerson")
                         .IsRequired()
@@ -508,10 +1208,26 @@ namespace SmartStock.Infrastructure.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<string>("GstNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("PanNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PaymentTerms")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Phone")
                         .IsRequired()
@@ -530,9 +1246,293 @@ namespace SmartStock.Infrastructure.Data.Migrations
 
                     b.HasIndex("BusinessId");
 
+                    b.HasIndex("GstNumber");
+
                     b.HasIndex("SupplierName");
 
                     b.ToTable("suppliers", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.SupplierInvoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ApprovedByUserName")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("BillingAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cgst")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid?>("ConfirmedPurchaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeliveryAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("DocumentHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DuplicateReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ExtractedRawJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("GrandTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("Igst")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("InvoiceDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsDuplicate")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<decimal>("OtherCharges")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("PaymentTerms")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PurchaseOrderNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Sgst")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("SupplierGst")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid?>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SupplierNameRaw")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("TaxableAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("ConfirmedPurchaseId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("InvoiceDate");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("BusinessId", "DocumentHash");
+
+                    b.HasIndex("BusinessId", "InvoiceNumber");
+
+                    b.ToTable("supplier_invoices", (string)null);
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.SupplierInvoiceItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("CalculatedStockQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal>("ConversionFactor")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("InvoiceQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("InvoiceUnit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("InvoiceUnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<bool>("IsIgnored")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("MatchConfidence")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)");
+
+                    b.Property<string>("MatchExplanation")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("MatchStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid?>("MatchedProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("NewPurchasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal?>("PackSize")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal>("PercentagePriceChange")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("numeric(7,2)");
+
+                    b.Property<decimal?>("PreviousPurchasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("PriceDifference")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("RawDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("RawHsnCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("RawProductName")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("RawSupplierSku")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("ShouldUpdatePurchasePrice")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("SupplierInvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TargetUnit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TaxPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchStatus");
+
+                    b.HasIndex("MatchedProductId");
+
+                    b.HasIndex("SupplierInvoiceId");
+
+                    b.ToTable("supplier_invoice_items", (string)null);
                 });
 
             modelBuilder.Entity("SmartStock.Core.Entities.User", b =>
@@ -584,6 +1584,58 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("SmartStock.Core.Entities.AIEmailProcessingLog", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Customer", "Customer")
+                        .WithMany("AIEmailLogs")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.CustomerEmailLog", "EmailLog")
+                        .WithMany()
+                        .HasForeignKey("EmailLogId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SmartStock.Core.Entities.RecurringOrder", "RecurringOrder")
+                        .WithMany("AIEmailLogs")
+                        .HasForeignKey("RecurringOrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("EmailLog");
+
+                    b.Navigation("RecurringOrder");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.AIInvoiceProcessingLog", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.SupplierInvoice", "SupplierInvoice")
+                        .WithMany("ProcessingLogs")
+                        .HasForeignKey("SupplierInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("SupplierInvoice");
+                });
+
             modelBuilder.Entity("SmartStock.Core.Entities.Category", b =>
                 {
                     b.HasOne("SmartStock.Core.Entities.Business", "Business")
@@ -593,6 +1645,89 @@ namespace SmartStock.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.Customer", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany("Customers")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.CustomerEmailLog", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Customer", "Customer")
+                        .WithMany("EmailLogs")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.RecurringOrder", "RecurringOrder")
+                        .WithMany("EmailLogs")
+                        .HasForeignKey("RecurringOrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("RecurringOrder");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.CustomerRecurringProduct", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Customer", "Customer")
+                        .WithMany("RecurringProducts")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.CustomerRecurringSetting", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Customer", "Customer")
+                        .WithOne("RecurringSetting")
+                        .HasForeignKey("SmartStock.Core.Entities.CustomerRecurringSetting", "CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("SmartStock.Core.Entities.Notification", b =>
@@ -632,6 +1767,39 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("SmartStock.Core.Entities.ProductPurchasePriceHistory", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Supplier", "Supplier")
+                        .WithMany("PriceHistories")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SmartStock.Core.Entities.SupplierInvoice", "SupplierInvoice")
+                        .WithMany()
+                        .HasForeignKey("SupplierInvoiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Supplier");
+
+                    b.Navigation("SupplierInvoice");
+                });
+
             modelBuilder.Entity("SmartStock.Core.Entities.Purchase", b =>
                 {
                     b.HasOne("SmartStock.Core.Entities.Business", "Business")
@@ -669,6 +1837,62 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.Navigation("Purchase");
                 });
 
+            modelBuilder.Entity("SmartStock.Core.Entities.RecurringOrder", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany("RecurringOrders")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Sale", "ConfirmedSale")
+                        .WithMany()
+                        .HasForeignKey("ConfirmedSaleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SmartStock.Core.Entities.Customer", "Customer")
+                        .WithMany("RecurringOrders")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("ConfirmedSale");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.RecurringOrderApprovalToken", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.RecurringOrder", "RecurringOrder")
+                        .WithMany("ApprovalTokens")
+                        .HasForeignKey("RecurringOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RecurringOrder");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.RecurringOrderItem", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.RecurringOrder", "RecurringOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("RecurringOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("RecurringOrder");
+                });
+
             modelBuilder.Entity("SmartStock.Core.Entities.RefreshToken", b =>
                 {
                     b.HasOne("SmartStock.Core.Entities.User", "User")
@@ -688,7 +1912,14 @@ namespace SmartStock.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SmartStock.Core.Entities.Customer", "Customer")
+                        .WithMany("Sales")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Business");
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("SmartStock.Core.Entities.SaleItem", b =>
@@ -740,6 +1971,49 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.Navigation("Business");
                 });
 
+            modelBuilder.Entity("SmartStock.Core.Entities.SupplierInvoice", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Business", "Business")
+                        .WithMany("SupplierInvoices")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartStock.Core.Entities.Purchase", "ConfirmedPurchase")
+                        .WithMany()
+                        .HasForeignKey("ConfirmedPurchaseId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SmartStock.Core.Entities.Supplier", "Supplier")
+                        .WithMany("Invoices")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Business");
+
+                    b.Navigation("ConfirmedPurchase");
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.SupplierInvoiceItem", b =>
+                {
+                    b.HasOne("SmartStock.Core.Entities.Product", "MatchedProduct")
+                        .WithMany()
+                        .HasForeignKey("MatchedProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SmartStock.Core.Entities.SupplierInvoice", "SupplierInvoice")
+                        .WithMany("Items")
+                        .HasForeignKey("SupplierInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MatchedProduct");
+
+                    b.Navigation("SupplierInvoice");
+                });
+
             modelBuilder.Entity("SmartStock.Core.Entities.User", b =>
                 {
                     b.HasOne("SmartStock.Core.Entities.Business", "Business")
@@ -755,15 +2029,21 @@ namespace SmartStock.Infrastructure.Data.Migrations
                 {
                     b.Navigation("Categories");
 
+                    b.Navigation("Customers");
+
                     b.Navigation("Notifications");
 
                     b.Navigation("Products");
 
                     b.Navigation("Purchases");
 
+                    b.Navigation("RecurringOrders");
+
                     b.Navigation("Sales");
 
                     b.Navigation("StockTransactions");
+
+                    b.Navigation("SupplierInvoices");
 
                     b.Navigation("Suppliers");
 
@@ -773,6 +2053,21 @@ namespace SmartStock.Infrastructure.Data.Migrations
             modelBuilder.Entity("SmartStock.Core.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.Customer", b =>
+                {
+                    b.Navigation("AIEmailLogs");
+
+                    b.Navigation("EmailLogs");
+
+                    b.Navigation("RecurringOrders");
+
+                    b.Navigation("RecurringProducts");
+
+                    b.Navigation("RecurringSetting");
+
+                    b.Navigation("Sales");
                 });
 
             modelBuilder.Entity("SmartStock.Core.Entities.Product", b =>
@@ -791,6 +2086,17 @@ namespace SmartStock.Infrastructure.Data.Migrations
                     b.Navigation("Items");
                 });
 
+            modelBuilder.Entity("SmartStock.Core.Entities.RecurringOrder", b =>
+                {
+                    b.Navigation("AIEmailLogs");
+
+                    b.Navigation("ApprovalTokens");
+
+                    b.Navigation("EmailLogs");
+
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("SmartStock.Core.Entities.Sale", b =>
                 {
                     b.Navigation("Items");
@@ -798,7 +2104,18 @@ namespace SmartStock.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("SmartStock.Core.Entities.Supplier", b =>
                 {
+                    b.Navigation("Invoices");
+
+                    b.Navigation("PriceHistories");
+
                     b.Navigation("Purchases");
+                });
+
+            modelBuilder.Entity("SmartStock.Core.Entities.SupplierInvoice", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("ProcessingLogs");
                 });
 
             modelBuilder.Entity("SmartStock.Core.Entities.User", b =>

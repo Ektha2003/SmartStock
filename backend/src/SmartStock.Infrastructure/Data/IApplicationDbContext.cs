@@ -17,6 +17,18 @@ public interface IApplicationDbContext
     DbSet<PurchaseItem> PurchaseItems { get; }
     DbSet<StockTransaction> StockTransactions { get; }
     DbSet<Notification> Notifications { get; }
+    DbSet<Customer> Customers { get; }
+    DbSet<CustomerRecurringSetting> CustomerRecurringSettings { get; }
+    DbSet<CustomerRecurringProduct> CustomerRecurringProducts { get; }
+    DbSet<RecurringOrder> RecurringOrders { get; }
+    DbSet<RecurringOrderItem> RecurringOrderItems { get; }
+    DbSet<RecurringOrderApprovalToken> RecurringOrderApprovalTokens { get; }
+    DbSet<CustomerEmailLog> CustomerEmailLogs { get; }
+    DbSet<AIEmailProcessingLog> AIEmailProcessingLogs { get; }
+    DbSet<SupplierInvoice> SupplierInvoices { get; }
+    DbSet<SupplierInvoiceItem> SupplierInvoiceItems { get; }
+    DbSet<ProductPurchasePriceHistory> ProductPurchasePriceHistories { get; }
+    DbSet<AIInvoiceProcessingLog> AIInvoiceProcessingLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

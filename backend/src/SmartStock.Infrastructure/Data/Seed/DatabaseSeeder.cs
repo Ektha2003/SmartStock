@@ -12,6 +12,7 @@ public static class DatabaseSeeder
         var demoBusinessExists = await context.Businesses.AnyAsync(b => b.BusinessName == "SmartStock Demo Store");
         if (demoBusinessExists)
         {
+            await SeedCustomerAndRecurringModuleAsync(context, Guid.Parse("11111111-1111-1111-1111-111111111111"));
             return;
         }
 
@@ -257,6 +258,239 @@ public static class DatabaseSeeder
                 CreatedAt = DateTime.UtcNow.AddHours(-rnd.Next(1, 12))
             });
         }
+
+        await context.SaveChangesAsync();
+
+        await SeedCustomerAndRecurringModuleAsync(context, businessId);
+    }
+
+    public static async Task SeedCustomerAndRecurringModuleAsync(ApplicationDbContext context, Guid businessId)
+    {
+        if (await context.Customers.AnyAsync(c => c.BusinessId == businessId))
+        {
+            return;
+        }
+
+        var products = await context.Products.Where(p => p.BusinessId == businessId).ToListAsync();
+        if (products.Count == 0) return;
+
+        var rice = products.FirstOrDefault(p => p.Name.Contains("Rice") || p.SKU.Contains("RICE")) ?? products[0];
+        var flour = products.FirstOrDefault(p => p.Name.Contains("Atta") || p.Name.Contains("Flour") || p.SKU.Contains("ATTA")) ?? (products.Count > 1 ? products[1] : products[0]);
+        var oil = products.FirstOrDefault(p => p.Name.Contains("Oil") || p.SKU.Contains("OIL")) ?? (products.Count > 2 ? products[2] : products[0]);
+        var sugar = products.FirstOrDefault(p => p.Name.Contains("Sugar") || p.SKU.Contains("SUG")) ?? (products.Count > 3 ? products[3] : products[0]);
+
+        // Customer 1: Rahul Sharma (from the user specification)
+        var rahul = new Customer
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            Name = "Rahul Sharma",
+            Email = "rahul.sharma@example.com",
+            Phone = "+91 98765 43210",
+            BillingAddress = "B-12, Sector 5, Noida, UP - 201301",
+            DeliveryAddress = "B-12, Sector 5, Noida, UP - 201301",
+            PreferredContactMethod = ContactMethod.Email,
+            RecurringOrderEnabled = true,
+            DefaultDeliveryInstructions = "Leave at front door with security if not available.",
+            Notes = "Regular weekly household essentials customer.",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-20)
+        };
+
+        var rahulSetting = new CustomerRecurringSetting
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            CustomerId = rahul.Id,
+            FrequencyType = RecurringFrequency.Every15Days,
+            IntervalDays = 15,
+            StartDate = DateTime.UtcNow.AddDays(-15),
+            NextOrderDate = DateTime.UtcNow.AddDays(1),
+            PreferredDeliveryTime = "Morning 09:00 - 12:00",
+            AutoEmailEnabled = true,
+            RequireCustomerApproval = true,
+            ReminderBeforeDeliveryDays = 1,
+            TimeZone = "Asia/Kolkata",
+            SubscriptionStatus = SubscriptionStatus.Active,
+            CreatedAt = DateTime.UtcNow.AddDays(-20)
+        };
+        rahul.RecurringSetting = rahulSetting;
+
+        // Customer 2: Priya Patel
+        var priya = new Customer
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            Name = "Priya Patel",
+            Email = "priya.patel@example.com",
+            Phone = "+91 98123 45678",
+            BillingAddress = "A-402, Sunshine Residency, Gurgaon, HR",
+            DeliveryAddress = "A-402, Sunshine Residency, Gurgaon, HR",
+            PreferredContactMethod = ContactMethod.Email,
+            RecurringOrderEnabled = true,
+            DefaultDeliveryInstructions = "Call before delivering.",
+            Notes = "Prefers organic products.",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-15)
+        };
+
+        var priyaSetting = new CustomerRecurringSetting
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            CustomerId = priya.Id,
+            FrequencyType = RecurringFrequency.Every7Days,
+            IntervalDays = 7,
+            StartDate = DateTime.UtcNow.AddDays(-7),
+            NextOrderDate = DateTime.UtcNow.AddDays(2),
+            PreferredDeliveryTime = "Evening 17:00 - 20:00",
+            AutoEmailEnabled = true,
+            RequireCustomerApproval = true,
+            ReminderBeforeDeliveryDays = 1,
+            TimeZone = "Asia/Kolkata",
+            SubscriptionStatus = SubscriptionStatus.Active,
+            CreatedAt = DateTime.UtcNow.AddDays(-15)
+        };
+        priya.RecurringSetting = priyaSetting;
+
+        // Customer 3: Amit Verma (Order needing review)
+        var amit = new Customer
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            Name = "Amit Verma",
+            Email = "amit.verma@example.com",
+            Phone = "+91 99887 66554",
+            BillingAddress = "Flat 101, Green View Apts, Indirapuram, Ghaziabad",
+            DeliveryAddress = "Flat 101, Green View Apts, Indirapuram, Ghaziabad",
+            PreferredContactMethod = ContactMethod.Email,
+            RecurringOrderEnabled = true,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-10)
+        };
+
+        var amitSetting = new CustomerRecurringSetting
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            CustomerId = amit.Id,
+            FrequencyType = RecurringFrequency.Every30Days,
+            IntervalDays = 30,
+            StartDate = DateTime.UtcNow.AddDays(-30),
+            NextOrderDate = DateTime.UtcNow.AddDays(5),
+            PreferredDeliveryTime = "Morning 09:00 - 12:00",
+            AutoEmailEnabled = true,
+            RequireCustomerApproval = true,
+            ReminderBeforeDeliveryDays = 2,
+            TimeZone = "Asia/Kolkata",
+            SubscriptionStatus = SubscriptionStatus.Active,
+            CreatedAt = DateTime.UtcNow.AddDays(-10)
+        };
+        amit.RecurringSetting = amitSetting;
+
+        context.Customers.AddRange(rahul, priya, amit);
+        context.CustomerRecurringSettings.AddRange(rahulSetting, priyaSetting, amitSetting);
+
+        // Rahul recurring products (prompt example): Rice - 10 KG, Wheat Flour - 5 KG, Cooking Oil - 2 Litre, Sugar - 3 KG
+        var rahulProducts = new List<CustomerRecurringProduct>
+        {
+            new() { Id = Guid.NewGuid(), BusinessId = businessId, CustomerId = rahul.Id, ProductId = rice.Id, DefaultQuantity = 10, Unit = UnitType.Kg, CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), BusinessId = businessId, CustomerId = rahul.Id, ProductId = flour.Id, DefaultQuantity = 5, Unit = UnitType.Kg, CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), BusinessId = businessId, CustomerId = rahul.Id, ProductId = oil.Id, DefaultQuantity = 2, Unit = UnitType.Litre, CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), BusinessId = businessId, CustomerId = rahul.Id, ProductId = sugar.Id, DefaultQuantity = 3, Unit = UnitType.Kg, CreatedAt = DateTime.UtcNow }
+        };
+        context.CustomerRecurringProducts.AddRange(rahulProducts);
+
+        // Priya recurring products
+        var priyaProducts = new List<CustomerRecurringProduct>
+        {
+            new() { Id = Guid.NewGuid(), BusinessId = businessId, CustomerId = priya.Id, ProductId = flour.Id, DefaultQuantity = 10, Unit = UnitType.Kg, CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), BusinessId = businessId, CustomerId = priya.Id, ProductId = oil.Id, DefaultQuantity = 3, Unit = UnitType.Litre, CreatedAt = DateTime.UtcNow }
+        };
+        context.CustomerRecurringProducts.AddRange(priyaProducts);
+
+        // Draft recurring order for Rahul with approval token
+        var orderNumber = $"REC-{DateTime.UtcNow:yyyyMMdd}-0001";
+        var draftOrder = new RecurringOrder
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            CustomerId = rahul.Id,
+            OrderNumber = orderNumber,
+            OrderSource = OrderSource.Recurring,
+            Status = RecurringOrderStatus.PendingCustomerApproval,
+            ScheduledOrderDate = DateTime.UtcNow,
+            ExpectedDeliveryDate = DateTime.UtcNow.AddDays(1),
+            PreferredDeliveryTime = "Morning 09:00 - 12:00",
+            ApprovalRequestedAt = DateTime.UtcNow,
+            SpecialInstructions = rahul.DefaultDeliveryInstructions,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        decimal total = 0;
+        foreach (var rp in rahulProducts)
+        {
+            var p = products.First(x => x.Id == rp.ProductId);
+            var subTotal = rp.DefaultQuantity * p.SellingPrice;
+            total += subTotal;
+
+            draftOrder.Items.Add(new RecurringOrderItem
+            {
+                Id = Guid.NewGuid(),
+                RecurringOrderId = draftOrder.Id,
+                ProductId = p.Id,
+                Quantity = rp.DefaultQuantity,
+                OriginalQuantity = rp.DefaultQuantity,
+                Unit = rp.Unit,
+                UnitPrice = p.SellingPrice,
+                SubTotal = subTotal
+            });
+        }
+        draftOrder.SubTotal = total;
+        draftOrder.TotalAmount = total;
+
+        var token = new RecurringOrderApprovalToken
+        {
+            Id = Guid.NewGuid(),
+            RecurringOrderId = draftOrder.Id,
+            Token = "demo-rahul-token-approval-2026",
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedAt = DateTime.UtcNow
+        };
+        draftOrder.ApprovalTokens.Add(token);
+        context.RecurringOrders.Add(draftOrder);
+
+        // Order for Amit flagged for review (to showcase admin manual review workflow)
+        var reviewOrder = new RecurringOrder
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            CustomerId = amit.Id,
+            OrderNumber = $"REC-{DateTime.UtcNow:yyyyMMdd}-0002",
+            OrderSource = OrderSource.AiAssisted,
+            Status = RecurringOrderStatus.ModificationRequested,
+            ScheduledOrderDate = DateTime.UtcNow,
+            ExpectedDeliveryDate = DateTime.UtcNow.AddDays(2),
+            PreferredDeliveryTime = "Morning 09:00 - 12:00",
+            SubTotal = 850,
+            TotalAmount = 850,
+            RequiresManualReview = true,
+            ManualReviewReason = "Customer requested 15 kg rice in email reply, but current inventory stock is 8 kg. Staff confirmation required.",
+            CreatedAt = DateTime.UtcNow
+        };
+        reviewOrder.Items.Add(new RecurringOrderItem
+        {
+            Id = Guid.NewGuid(),
+            RecurringOrderId = reviewOrder.Id,
+            ProductId = rice.Id,
+            Quantity = 15,
+            OriginalQuantity = 5,
+            Unit = UnitType.Kg,
+            UnitPrice = rice.SellingPrice,
+            SubTotal = 15 * rice.SellingPrice,
+            IsModifiedByCustomer = true
+        });
+        context.RecurringOrders.Add(reviewOrder);
 
         await context.SaveChangesAsync();
     }

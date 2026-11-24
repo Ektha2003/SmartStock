@@ -75,4 +75,48 @@ public class SuppliersController : BaseApiController
         var result = await _supplierService.DeleteAsync(id, cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Get supplier profile with recent invoices, purchases, and supplied products.
+    /// </summary>
+    [HttpGet("{id:guid}/detail")]
+    [ProducesResponseType(typeof(ApiResponse<SupplierDetailExtendedDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDetailExtended(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _supplierService.GetDetailExtendedAsync(id, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get products supplied by this supplier.
+    /// </summary>
+    [HttpGet("{id:guid}/products")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<SupplierSuppliedProductDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSuppliedProducts(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _supplierService.GetSuppliedProductsAsync(id, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get invoices for this supplier.
+    /// </summary>
+    [HttpGet("{id:guid}/invoices")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<SupplierInvoiceHistoryDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSupplierInvoices(Guid id, [FromQuery] PaginationParams pagination, CancellationToken cancellationToken)
+    {
+        var result = await _supplierService.GetSupplierInvoicesAsync(id, pagination, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get purchase transactions for this supplier.
+    /// </summary>
+    [HttpGet("{id:guid}/purchases")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<SupplierPurchaseHistoryDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSupplierPurchases(Guid id, [FromQuery] PaginationParams pagination, CancellationToken cancellationToken)
+    {
+        var result = await _supplierService.GetSupplierPurchasesAsync(id, pagination, cancellationToken);
+        return Ok(result);
+    }
 }

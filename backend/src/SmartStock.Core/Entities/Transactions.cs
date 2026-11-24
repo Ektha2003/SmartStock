@@ -5,13 +5,16 @@ namespace SmartStock.Core.Entities;
 public class Sale : BaseEntity, IBusinessScopedEntity
 {
     public Guid BusinessId { get; set; }
+    public Guid? CustomerId { get; set; }
     public string InvoiceNumber { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
     public DateTime SaleDate { get; set; } = DateTime.UtcNow;
+    public OrderSource OrderSource { get; set; } = OrderSource.Manual;
     public string? Notes { get; set; }
 
     // Navigation properties
     public Business Business { get; set; } = null!;
+    public Customer? Customer { get; set; }
     public ICollection<SaleItem> Items { get; set; } = new List<SaleItem>();
 }
 

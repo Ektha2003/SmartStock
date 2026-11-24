@@ -20,6 +20,9 @@ public class Business : BaseEntity
     public ICollection<Purchase> Purchases { get; set; } = new List<Purchase>();
     public ICollection<StockTransaction> StockTransactions { get; set; } = new List<StockTransaction>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    public ICollection<Customer> Customers { get; set; } = new List<Customer>();
+    public ICollection<RecurringOrder> RecurringOrders { get; set; } = new List<RecurringOrder>();
+    public ICollection<SupplierInvoice> SupplierInvoices { get; set; } = new List<SupplierInvoice>();
 }
 
 public class User : BaseEntity, IBusinessScopedEntity
