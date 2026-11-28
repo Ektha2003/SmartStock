@@ -80,14 +80,21 @@ public class AIAssistantService : IAIAssistantService
             .Take(5)
             .ToListAsync(cancellationToken);
 
+        var covexKey = Environment.GetEnvironmentVariable("COVEXCODE_API_KEY") ?? _configuration["CovexCode:ApiKey"]?.Trim();
+        var covexEndpoint = Environment.GetEnvironmentVariable("COVEXCODE_ENDPOINT") ?? _configuration["CovexCode:Endpoint"] ?? "https://llm.covexcode.com/v1";
+        var covexModel = Environment.GetEnvironmentVariable("COVEXCODE_MODEL") ?? _configuration["CovexCode:Model"] ?? "deepseek-v4-flash";
+
         var apiKey = _configuration["Gemini:ApiKey"];
         var model = _configuration["Gemini:Model"] ?? "gemini-2.5-flash";
         if (model.Contains("3.8", StringComparison.OrdinalIgnoreCase)) model = "gemini-2.5-flash";
 
-        // If Gemini API Key is missing or unavailable, provide intelligent deterministic fallback
-        if (string.IsNullOrWhiteSpace(apiKey) || apiKey.StartsWith("your_"))
+        var hasCovex = !string.IsNullOrWhiteSpace(covexKey) && !covexKey.StartsWith("your_");
+        var hasGemini = !string.IsNullOrWhiteSpace(apiKey) && !apiKey.StartsWith("your_");
+
+        // If neither CovexCode nor Gemini is configured, provide intelligent deterministic fallback
+        if (!hasCovex && !hasGemini)
         {
-            _logger.LogInformation("Gemini API key is not configured. Serving deterministic assistant fallback.");
+            _logger.LogInformation("No external AI key configured. Serving deterministic assistant fallback.");
             var fallback = GenerateDeterministicFallback(question, businessName, products.Count, totalStockValue, totalSalesToday, totalSalesMonth, lowStockProducts, outOfStockProducts, topSellers);
             return ApiResponse<AIAssistantResponseDto>.Ok(fallback, "Response generated via built-in SmartStock intelligence.");
         }
@@ -115,6 +122,63 @@ public class AIAssistantService : IAIAssistantService
                 "Do NOT make up facts not in the context. Never advise dangerous or illegal modifications. " +
                 "Keep responses under 150 words unless detailed analysis is asked.\n\n" +
                 "STORE METRICS:\n" + contextBuilder;
+
+            // 1. Try CovexCode first (Primary Sponsor Provider)
+            if (hasCovex)
+            {
+                try
+                {
+                    var covexPayload = new
+                    {
+                        model = covexModel,
+                        messages = new[]
+                        {
+                            new { role = "system", content = systemPrompt },
+                            new { role = "user", content = question }
+                        },
+                        temperature = 0.3,
+                        max_tokens = 600
+                    };
+
+                    using var covexMsg = new HttpRequestMessage(HttpMethod.Post, $"{covexEndpoint.TrimEnd('/')}/chat/completions");
+                    covexMsg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", covexKey);
+                    covexMsg.Content = new StringContent(JsonSerializer.Serialize(covexPayload), Encoding.UTF8, "application/json");
+
+                    var covexResp = await _httpClient.SendAsync(covexMsg, cancellationToken);
+                    if (covexResp.IsSuccessStatusCode)
+                    {
+                        var respText = await covexResp.Content.ReadAsStringAsync(cancellationToken);
+                        var doc = JsonNode.Parse(respText);
+                        var answer = doc?["choices"]?[0]?["message"]?["content"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(answer))
+                        {
+                            return ApiResponse<AIAssistantResponseDto>.Ok(new AIAssistantResponseDto
+                            {
+                                Answer = answer.Trim(),
+                                SuggestedFollowUps = GenerateFollowUpSuggestions(question),
+                                IsAiGenerated = true,
+                                Timestamp = DateTime.UtcNow
+                            }, "AI response generated via CovexCode (deepseek-v4-flash).");
+                        }
+                    }
+                    else
+                    {
+                        var err = await covexResp.Content.ReadAsStringAsync(cancellationToken);
+                        _logger.LogWarning("CovexCode returned {StatusCode}: {Error}. Falling back to secondary provider.", covexResp.StatusCode, err);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "CovexCode request failed. Trying secondary provider.");
+                }
+            }
+
+            // 2. Secondary Provider: Gemini or fallback
+            if (!hasGemini)
+            {
+                var fallback = GenerateDeterministicFallback(question, businessName, products.Count, totalStockValue, totalSalesToday, totalSalesMonth, lowStockProducts, outOfStockProducts, topSellers);
+                return ApiResponse<AIAssistantResponseDto>.Ok(fallback, "Response served via SmartStock assistant (fallback).");
+            }
 
             var requestBody = new
             {

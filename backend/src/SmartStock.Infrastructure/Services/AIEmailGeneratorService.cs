@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -30,6 +31,10 @@ public class AIEmailGeneratorService : IAIEmailGeneratorService
         string approvalPortalUrl,
         CancellationToken cancellationToken = default)
     {
+        var covexKey = Environment.GetEnvironmentVariable("COVEXCODE_API_KEY") ?? _configuration["CovexCode:ApiKey"]?.Trim();
+        var covexEndpoint = Environment.GetEnvironmentVariable("COVEXCODE_ENDPOINT") ?? _configuration["CovexCode:Endpoint"] ?? "https://llm.covexcode.com/v1";
+        var covexModel = Environment.GetEnvironmentVariable("COVEXCODE_MODEL") ?? _configuration["CovexCode:Model"] ?? "deepseek-v4-flash";
+
         var apiKey = _configuration["Gemini:ApiKey"];
         var model = _configuration["Gemini:Model"] ?? "gemini-2.5-flash";
         if (model.Contains("3.8", StringComparison.OrdinalIgnoreCase)) model = "gemini-2.5-flash";
@@ -42,11 +47,7 @@ public class AIEmailGeneratorService : IAIEmailGeneratorService
 
         string introText = string.Empty;
 
-        if (!string.IsNullOrWhiteSpace(apiKey) && !apiKey.StartsWith("your_"))
-        {
-            try
-            {
-                var prompt = $@"You are a friendly grocery store manager for a trusted local Kirana and supermarket.
+        var prompt = $@"You are a friendly grocery store manager for a trusted local Kirana and supermarket.
 Generate a warm, professional, personalized email message for regular customer {customer.Name}.
 Their scheduled recurring grocery delivery order #{order.OrderNumber} is upcoming.
 Expected Delivery: {order.ExpectedDeliveryDate:dd MMMM yyyy} ({order.PreferredDeliveryTime ?? "Regular Delivery"}).
@@ -58,6 +59,45 @@ Total: ₹{order.TotalAmount:N2}.
 Write a personalized greeting and 2-3 friendly sentences reminding them of their regular schedule, asking them to review or reply if they'd like to adjust quantities, add new items, or skip this cycle.
 Do NOT output HTML tags, just polite plain text paragraphs.";
 
+        // 1. Try CovexCode first
+        if (!string.IsNullOrWhiteSpace(covexKey) && !covexKey.StartsWith("your_"))
+        {
+            try
+            {
+                var covexPayload = new
+                {
+                    model = covexModel,
+                    messages = new[]
+                    {
+                        new { role = "user", content = prompt }
+                    },
+                    temperature = 0.4,
+                    max_tokens = 300
+                };
+
+                using var covexMsg = new HttpRequestMessage(HttpMethod.Post, $"{covexEndpoint.TrimEnd('/')}/chat/completions");
+                covexMsg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", covexKey);
+                covexMsg.Content = new StringContent(JsonSerializer.Serialize(covexPayload), Encoding.UTF8, "application/json");
+
+                var covexResp = await _httpClient.SendAsync(covexMsg, cancellationToken);
+                if (covexResp.IsSuccessStatusCode)
+                {
+                    var respJson = await covexResp.Content.ReadAsStringAsync(cancellationToken);
+                    var doc = JsonNode.Parse(respJson);
+                    introText = doc?["choices"]?[0]?["message"]?["content"]?.ToString() ?? string.Empty;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "CovexCode email personalization failed. Trying fallback.");
+            }
+        }
+
+        // 2. Try Gemini if CovexCode didn't return text
+        if (string.IsNullOrWhiteSpace(introText) && !string.IsNullOrWhiteSpace(apiKey) && !apiKey.StartsWith("your_"))
+        {
+            try
+            {
                 var requestBody = new
                 {
                     contents = new[]

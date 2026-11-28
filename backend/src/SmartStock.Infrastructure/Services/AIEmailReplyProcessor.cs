@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -457,18 +458,18 @@ public class AIEmailReplyProcessor : IAIEmailReplyProcessor
             List<Product> products,
             CancellationToken cancellationToken)
     {
+        var covexKey = Environment.GetEnvironmentVariable("COVEXCODE_API_KEY") ?? _configuration["CovexCode:ApiKey"]?.Trim();
+        var covexEndpoint = Environment.GetEnvironmentVariable("COVEXCODE_ENDPOINT") ?? _configuration["CovexCode:Endpoint"] ?? "https://llm.covexcode.com/v1";
+        var covexModel = Environment.GetEnvironmentVariable("COVEXCODE_MODEL") ?? _configuration["CovexCode:Model"] ?? "deepseek-v4-flash";
+
         var apiKey = _configuration["Gemini:ApiKey"];
         var model = _configuration["Gemini:Model"] ?? "gemini-2.5-flash";
         if (model.Contains("3.8", StringComparison.OrdinalIgnoreCase)) model = "gemini-2.5-flash";
 
-        if (!string.IsNullOrWhiteSpace(apiKey) && !apiKey.StartsWith("your_"))
-        {
-            try
-            {
-                var productCatalogCatalog = string.Join("\n", products.Take(40).Select(p => $"- ID: {p.Id}, Name: {p.Name}, Unit: {p.Unit}, AvailableStock: {p.CurrentStock}"));
-                var currentItems = string.Join("\n", order.Items.Select(i => $"- Product: {i.Product?.Name}, CurrentQty: {i.Quantity} {i.Unit}"));
+        var productCatalogCatalog = string.Join("\n", products.Take(40).Select(p => $"- ID: {p.Id}, Name: {p.Name}, Unit: {p.Unit}, AvailableStock: {p.CurrentStock}"));
+        var currentItems = string.Join("\n", order.Items.Select(i => $"- Product: {i.Product?.Name}, CurrentQty: {i.Quantity} {i.Unit}"));
 
-                var prompt = $@"You are SmartStock AI Classifier for retail customer emails.
+        var prompt = $@"You are SmartStock AI Classifier for retail customer emails.
 Analyze the following customer email reply regarding their recurring grocery delivery order.
 CURRENT ORDER ITEMS:
 {currentItems}
@@ -480,7 +481,7 @@ CUSTOMER EMAIL REPLY:
 ""{emailBody}""
 
 Extract the intent and structured modifications.
-Output ONLY a JSON object matching this schema:
+Output ONLY a valid JSON object matching this schema without markdown or code blocks:
 {{
   ""intent"": ""APPROVE_ORDER"" | ""MODIFY_ORDER"" | ""ADD_PRODUCT"" | ""REMOVE_PRODUCT"" | ""SKIP_ORDER"" | ""RESCHEDULE_ORDER"" | ""CHANGE_RECURRING_PREFERENCES"" | ""GENERAL_QUERY"" | ""UNKNOWN"",
   ""confidence"": 0.95,
@@ -498,6 +499,91 @@ Output ONLY a JSON object matching this schema:
   ""customerMessage"": ""Brief summary""
 }}";
 
+        // 1. Try CovexCode first
+        if (!string.IsNullOrWhiteSpace(covexKey) && !covexKey.StartsWith("your_"))
+        {
+            try
+            {
+                var covexPayload = new
+                {
+                    model = covexModel,
+                    messages = new[]
+                    {
+                        new { role = "user", content = prompt }
+                    },
+                    temperature = 0.1
+                };
+
+                using var covexMsg = new HttpRequestMessage(HttpMethod.Post, $"{covexEndpoint.TrimEnd('/')}/chat/completions");
+                covexMsg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", covexKey);
+                covexMsg.Content = new StringContent(JsonSerializer.Serialize(covexPayload), Encoding.UTF8, "application/json");
+
+                var covexResp = await _httpClient.SendAsync(covexMsg, cancellationToken);
+                if (covexResp.IsSuccessStatusCode)
+                {
+                    var responseJson = await covexResp.Content.ReadAsStringAsync(cancellationToken);
+                    var doc = JsonNode.Parse(responseJson);
+                    var rawText = doc?["choices"]?[0]?["message"]?["content"]?.ToString() ?? "{}";
+                    
+                    // Strip possible markdown fences
+                    rawText = rawText.Trim();
+                    if (rawText.StartsWith("```json", StringComparison.OrdinalIgnoreCase)) rawText = rawText.Substring(7);
+                    else if (rawText.StartsWith("```")) rawText = rawText.Substring(3);
+                    if (rawText.EndsWith("```")) rawText = rawText.Substring(0, rawText.Length - 3);
+                    rawText = rawText.Trim();
+
+                    using var parsedDoc = JsonDocument.Parse(rawText);
+                    var root = parsedDoc.RootElement;
+
+                    var intent = root.GetProperty("intent").GetString() ?? "UNKNOWN";
+                    var confidence = root.TryGetProperty("confidence", out var confProp) ? confProp.GetDecimal() : 0.95m;
+                    var subChange = root.TryGetProperty("subscriptionChange", out var subProp) && subProp.GetBoolean();
+
+                    DateTime? deliveryDate = null;
+                    if (root.TryGetProperty("deliveryDate", out var dateProp) && !string.IsNullOrWhiteSpace(dateProp.GetString()))
+                    {
+                        if (DateTime.TryParse(dateProp.GetString(), out var parsedDate))
+                        {
+                            deliveryDate = parsedDate;
+                        }
+                    }
+
+                    var itemsList = new List<AIExtractedItemDto>();
+                    if (root.TryGetProperty("items", out var itemsArray) && itemsArray.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var it in itemsArray.EnumerateArray())
+                        {
+                            Guid? pId = null;
+                            if (it.TryGetProperty("productId", out var pidProp) && Guid.TryParse(pidProp.GetString(), out var guidVal))
+                            {
+                                pId = guidVal;
+                            }
+
+                            itemsList.Add(new AIExtractedItemDto
+                            {
+                                ProductId = pId,
+                                ProductName = it.TryGetProperty("productName", out var nameProp) ? nameProp.GetString() : null,
+                                Quantity = it.TryGetProperty("quantity", out var qtyProp) ? qtyProp.GetDecimal() : 0,
+                                Unit = it.TryGetProperty("unit", out var unitProp) ? unitProp.GetString() : null,
+                                Action = it.TryGetProperty("action", out var actProp) ? actProp.GetString() ?? "UPDATE" : "UPDATE"
+                            });
+                        }
+                    }
+
+                    return (intent, itemsList, deliveryDate, subChange, confidence, rawText);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "CovexCode email classification failed. Falling back to secondary parser.");
+            }
+        }
+
+        // 2. Try Gemini fallback
+        if (!string.IsNullOrWhiteSpace(apiKey) && !apiKey.StartsWith("your_"))
+        {
+            try
+            {
                 var requestBody = new
                 {
                     contents = new[] { new { role = "user", parts = new object[] { new { text = prompt } } } },
