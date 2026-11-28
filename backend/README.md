@@ -3,10 +3,11 @@
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4.svg?style=flat&logo=dotnet)](https://dotnet.microsoft.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18.4-4169E1.svg?style=flat&logo=postgresql)](https://www.postgresql.org/)
 [![EF Core](https://img.shields.io/badge/EF%20Core-10.0-blue.svg?style=flat)](https://learn.microsoft.com/en-us/ef/core/)
+[![CovexCode](https://img.shields.io/badge/CovexCode-DeepSeek--v4--Flash-00C853.svg?style=flat)](https://covexcode.com/)
 [![Gemini AI](https://img.shields.io/badge/Google-Gemini%20AI-orange.svg?style=flat&logo=google)](https://ai.google.dev/)
 [![Tests](https://img.shields.io/badge/Tests-18%20Passed-brightgreen.svg?style=flat)](#testing)
 
-SmartStock is a production-grade, multi-tenant inventory, sales, and predictive business management backend engineered specifically for Indian kirana stores, supermarkets, and small retailers. It combines multi-tenant relational isolation, ACID transactions with PostgreSQL execution strategies, demand forecasting, stock replenishment recommendations, and Google Gemini AI multimodal intelligence.
+SmartStock is a production-grade, multi-tenant inventory, sales, and predictive business management backend engineered specifically for Indian kirana stores, supermarkets, and small retailers. It integrates CovexCode DeepSeek-v4-Flash and Google Gemini AI models for conversational retail intelligence, multimodal invoice OCR, and autonomous customer order management.
 
 ---
 
